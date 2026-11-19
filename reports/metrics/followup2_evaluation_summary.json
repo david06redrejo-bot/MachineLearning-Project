@@ -1,0 +1,430 @@
+{
+  "interpreted_model": "Logistic Regression (L2)",
+  "error_analysis": {
+    "evaluated_model": "Logistic Regression (L2)",
+    "confusion_matrix": {
+      "tn": 562,
+      "fp": 117,
+      "fn": 149,
+      "tp": 531
+    },
+    "false_positive_total": 117,
+    "false_positive_irreducible_dnf_share": 0.6068376068376068,
+    "false_positive_breakdown": {
+      "Crash / Incident DNF": 30,
+      "Mechanical / Reliability DNF": 36,
+      "DNS / DSQ / Excluded": 5,
+      "Finished Classified P11+": 46
+    },
+    "false_negative_total": 149,
+    "false_negative_breakdown": {
+      "High-Attrition Race (>=2 Top-10 DNFs)": 69,
+      "Midfield Grid Border (P9-P13)": 48,
+      "Back-of-Grid Pace/Strategy Surge (P14+)": 32
+    },
+    "overturn_wins_vs_grid10": 116,
+    "overturn_losses_vs_grid10": 71,
+    "slice_robustness": [
+      {
+        "slice": "2022 Season",
+        "n": 440,
+        "grid10_acc": 73.18181818181819,
+        "model_acc": 78.18181818181819,
+        "model_auc": 0.8356404958677686,
+        "gain_pp": 5.000000000000004
+      },
+      {
+        "slice": "2023 Season",
+        "n": 440,
+        "grid10_acc": 73.86363636363636,
+        "model_acc": 79.54545454545455,
+        "model_auc": 0.8618181818181819,
+        "gain_pp": 5.681818181818176
+      },
+      {
+        "slice": "2024 Season",
+        "n": 479,
+        "grid10_acc": 83.7160751565762,
+        "model_acc": 83.29853862212944,
+        "model_auc": 0.9100767085076709,
+        "gain_pp": -0.41753653444676075
+      },
+      {
+        "slice": "Midfield (P8-P13)",
+        "n": 405,
+        "grid10_acc": 61.23456790123457,
+        "model_acc": 68.14814814814815,
+        "model_auc": 0.7544581618655692,
+        "gain_pp": 6.913580246913575
+      },
+      {
+        "slice": "Grid Penalty (Drop>=3)",
+        "n": 83,
+        "grid10_acc": 55.42168674698795,
+        "model_acc": 79.51807228915662,
+        "model_auc": 0.8732558139534883,
+        "gain_pp": 24.096385542168676
+      },
+      {
+        "slice": "Overall Test (2022-24)",
+        "n": 1359,
+        "grid10_acc": 77.11552612214864,
+        "model_acc": 80.42678440029434,
+        "model_auc": 0.8707918218833925,
+        "gain_pp": 3.311258278145701
+      }
+    ],
+    "iconic_overturn_wins": [
+      {
+        "year": 2024,
+        "race_name": "Belgian Grand Prix",
+        "driver_name": "Max Verstappen",
+        "constructor_name": "Red Bull",
+        "grid": 11,
+        "qualy_pos": 1.0,
+        "positionOrder": 4,
+        "const_roll5_pts_per_car": 10.4,
+        "y_prob": 0.8693730237218509,
+        "y_pred": 1,
+        "top10": 1
+      },
+      {
+        "year": 2022,
+        "race_name": "Italian Grand Prix",
+        "driver_name": "Nicholas Latifi",
+        "constructor_name": "Williams",
+        "grid": 10,
+        "qualy_pos": 16.0,
+        "positionOrder": 15,
+        "const_roll5_pts_per_car": 0.1,
+        "y_prob": 0.1352395497882364,
+        "y_pred": 0,
+        "top10": 0
+      },
+      {
+        "year": 2023,
+        "race_name": "Dutch Grand Prix",
+        "driver_name": "Logan Sargeant",
+        "constructor_name": "Williams",
+        "grid": 10,
+        "qualy_pos": 10.0,
+        "positionOrder": 20,
+        "const_roll5_pts_per_car": 1.0,
+        "y_prob": 0.15824726924413277,
+        "y_pred": 0,
+        "top10": 0
+      },
+      {
+        "year": 2022,
+        "race_name": "Belgian Grand Prix",
+        "driver_name": "Max Verstappen",
+        "constructor_name": "Red Bull",
+        "grid": 14,
+        "qualy_pos": 1.0,
+        "positionOrder": 1,
+        "const_roll5_pts_per_car": 13.9,
+        "y_prob": 0.8212494017113129,
+        "y_pred": 1,
+        "top10": 1
+      },
+      {
+        "year": 2022,
+        "race_name": "United States Grand Prix",
+        "driver_name": "Charles Leclerc",
+        "constructor_name": "Ferrari",
+        "grid": 12,
+        "qualy_pos": 2.0,
+        "positionOrder": 3,
+        "const_roll5_pts_per_car": 12.0,
+        "y_prob": 0.8176495157647264,
+        "y_pred": 1,
+        "top10": 1
+      },
+      {
+        "year": 2022,
+        "race_name": "Emilia Romagna Grand Prix",
+        "driver_name": "Mick Schumacher",
+        "constructor_name": "Haas F1 Team",
+        "grid": 10,
+        "qualy_pos": 12.0,
+        "positionOrder": 17,
+        "const_roll5_pts_per_car": 1.2,
+        "y_prob": 0.19494197479332642,
+        "y_pred": 0,
+        "top10": 0
+      },
+      {
+        "year": 2024,
+        "race_name": "Emilia Romagna Grand Prix",
+        "driver_name": "Sergio Pérez",
+        "constructor_name": "Red Bull",
+        "grid": 11,
+        "qualy_pos": 11.0,
+        "positionOrder": 8,
+        "const_roll5_pts_per_car": 16.6,
+        "y_prob": 0.8042170948427182,
+        "y_pred": 1,
+        "top10": 1
+      },
+      {
+        "year": 2022,
+        "race_name": "British Grand Prix",
+        "driver_name": "Nicholas Latifi",
+        "constructor_name": "Williams",
+        "grid": 10,
+        "qualy_pos": 10.0,
+        "positionOrder": 12,
+        "const_roll5_pts_per_car": 0.2,
+        "y_prob": 0.19626875929976317,
+        "y_pred": 0,
+        "top10": 0
+      }
+    ],
+    "highest_confidence_misses": [
+      {
+        "year": 2024,
+        "race_name": "Australian Grand Prix",
+        "driver_name": "Max Verstappen",
+        "constructor_name": "Red Bull",
+        "grid": 1,
+        "positionOrder": 19,
+        "status": "Brakes",
+        "status_category": "mechanical_dnf",
+        "y_prob": 0.9314459474831679,
+        "y_pred": 1,
+        "top10": 0
+      },
+      {
+        "year": 2022,
+        "race_name": "Azerbaijan Grand Prix",
+        "driver_name": "Charles Leclerc",
+        "constructor_name": "Ferrari",
+        "grid": 1,
+        "positionOrder": 19,
+        "status": "Power Unit",
+        "status_category": "mechanical_dnf",
+        "y_prob": 0.9281650291803841,
+        "y_pred": 1,
+        "top10": 0
+      },
+      {
+        "year": 2023,
+        "race_name": "Qatar Grand Prix",
+        "driver_name": "Guanyu Zhou",
+        "constructor_name": "Alfa Romeo",
+        "grid": 19,
+        "positionOrder": 9,
+        "status": "Finished",
+        "status_category": "finished",
+        "y_prob": 0.07684120859397704,
+        "y_pred": 0,
+        "top10": 1
+      },
+      {
+        "year": 2022,
+        "race_name": "United States Grand Prix",
+        "driver_name": "Carlos Sainz",
+        "constructor_name": "Ferrari",
+        "grid": 1,
+        "positionOrder": 20,
+        "status": "Collision damage",
+        "status_category": "incident_dnf",
+        "y_prob": 0.9179653539066338,
+        "y_pred": 1,
+        "top10": 0
+      },
+      {
+        "year": 2022,
+        "race_name": "Spanish Grand Prix",
+        "driver_name": "Charles Leclerc",
+        "constructor_name": "Ferrari",
+        "grid": 1,
+        "positionOrder": 20,
+        "status": "Turbo",
+        "status_category": "mechanical_dnf",
+        "y_prob": 0.9169261468159675,
+        "y_pred": 1,
+        "top10": 0
+      },
+      {
+        "year": 2022,
+        "race_name": "Japanese Grand Prix",
+        "driver_name": "Nicholas Latifi",
+        "constructor_name": "Williams",
+        "grid": 20,
+        "positionOrder": 9,
+        "status": "Finished",
+        "status_category": "finished",
+        "y_prob": 0.08387999056130357,
+        "y_pred": 0,
+        "top10": 1
+      },
+      {
+        "year": 2024,
+        "race_name": "Austrian Grand Prix",
+        "driver_name": "Lando Norris",
+        "constructor_name": "McLaren",
+        "grid": 2,
+        "positionOrder": 20,
+        "status": "+7 Laps",
+        "status_category": "finished",
+        "y_prob": 0.9157021809690691,
+        "y_pred": 1,
+        "top10": 0
+      },
+      {
+        "year": 2022,
+        "race_name": "Australian Grand Prix",
+        "driver_name": "Max Verstappen",
+        "constructor_name": "Red Bull",
+        "grid": 2,
+        "positionOrder": 18,
+        "status": "Fuel leak",
+        "status_category": "mechanical_dnf",
+        "y_prob": 0.914348723542566,
+        "y_pred": 1,
+        "top10": 0
+      }
+    ]
+  },
+  "top_coefficients": [
+    {
+      "feature": "const_roll10_avg_pos",
+      "label": "Constructor Avg Finish (Last 10)",
+      "group": "B_form",
+      "std_coef": -0.6498502644392395,
+      "odds_ratio_per_sd": 0.52212395143076,
+      "coef_ci_lo": -0.8727218464778815,
+      "coef_ci_hi": -0.37043950444287815,
+      "perm_auc_linear_mean": 0.054323038493748046,
+      "perm_auc_linear_std": 0.005865143816266718,
+      "perm_auc_rf_mean": 0.004021990239394739,
+      "perm_auc_rf_std": 0.0020538353900120977
+    },
+    {
+      "feature": "const_roll5_pts_per_car",
+      "label": "Constructor Pts/Car (Last 5)",
+      "group": "B_form",
+      "std_coef": -0.6243129405045896,
+      "odds_ratio_per_sd": 0.5356293113301989,
+      "coef_ci_lo": -0.8016796709724737,
+      "coef_ci_hi": -0.43049466717719315,
+      "perm_auc_linear_mean": 0.015390712986225418,
+      "perm_auc_linear_std": 0.004012813744821411,
+      "perm_auc_rf_mean": 0.0005640503624130118,
+      "perm_auc_rf_std": 0.0013858301355912923
+    },
+    {
+      "feature": "drv_roll5_avg_pos",
+      "label": "Driver Avg Finish (Last 5)",
+      "group": "B_form",
+      "std_coef": -0.4729074532652011,
+      "odds_ratio_per_sd": 0.6231877424997054,
+      "coef_ci_lo": -0.7061078087233948,
+      "coef_ci_hi": -0.24978449250611995,
+      "perm_auc_linear_mean": 0.022988391232781766,
+      "perm_auc_linear_std": 0.0035981259786150655,
+      "perm_auc_rf_mean": 0.0007814981662767987,
+      "perm_auc_rf_std": 0.0008502052208399207
+    },
+    {
+      "feature": "qualy_pos",
+      "label": "Qualifying Rank",
+      "group": "A_qualifying",
+      "std_coef": -0.3641391569897466,
+      "odds_ratio_per_sd": 0.6947945025039053,
+      "coef_ci_lo": -0.5383054588005851,
+      "coef_ci_hi": -0.10557532067728297,
+      "perm_auc_linear_mean": 0.015446735395188982,
+      "perm_auc_linear_std": 0.003460910753275402,
+      "perm_auc_rf_mean": 0.005513153715094287,
+      "perm_auc_rf_std": 0.002022740195554096
+    },
+    {
+      "feature": "grid_pct",
+      "label": "Normalized Grid Percentile",
+      "group": "A_qualifying",
+      "std_coef": -0.31462649459590863,
+      "odds_ratio_per_sd": 0.7300615052688484,
+      "coef_ci_lo": -0.6012336126047517,
+      "coef_ci_hi": -0.042496239987891954,
+      "perm_auc_linear_mean": 0.011600825897369235,
+      "perm_auc_linear_std": 0.0031742128176163024,
+      "perm_auc_rf_mean": 0.005169366715758479,
+      "perm_auc_rf_std": 0.002098361389869682
+    },
+    {
+      "feature": "const_roll5_top10_rate",
+      "label": "Constructor Top-10 Rate (Last 5)",
+      "group": "B_form",
+      "std_coef": 0.2750792557409137,
+      "odds_ratio_per_sd": 1.3166350216166787,
+      "coef_ci_lo": 0.076706180871949,
+      "coef_ci_hi": 0.44447354962387575,
+      "perm_auc_linear_mean": 0.006254512114123993,
+      "perm_auc_linear_std": 0.0024929332256569407,
+      "perm_auc_rf_mean": -4.8514251061293476e-05,
+      "perm_auc_rf_std": 0.0007171083489388358
+    },
+    {
+      "feature": "const_season_pts_per_race",
+      "label": "Constructor Season Pts/Race (Prior)",
+      "group": "B_form",
+      "std_coef": 0.19904549425505239,
+      "odds_ratio_per_sd": 1.2202374784321806,
+      "coef_ci_lo": -0.019265194067115927,
+      "coef_ci_hi": 0.39725983015411537,
+      "perm_auc_linear_mean": 0.005628302867538789,
+      "perm_auc_linear_std": 0.0015342705019162966,
+      "perm_auc_rf_mean": 0.003367914175979688,
+      "perm_auc_rf_std": 0.0016677244915056758
+    },
+    {
+      "feature": "drv_roll5_pos_gained",
+      "label": "Driver Avg Positions Gained (Last 5)",
+      "group": "B_form",
+      "std_coef": -0.18998591791963,
+      "odds_ratio_per_sd": 0.8269707793303447,
+      "coef_ci_lo": -0.2806222341317535,
+      "coef_ci_hi": -0.11489681717030033,
+      "perm_auc_linear_mean": 0.002875046925986898,
+      "perm_auc_linear_std": 0.0013764125513168858,
+      "perm_auc_rf_mean": 3.8623696901400147e-05,
+      "perm_auc_rf_std": 0.00022842730050021145
+    },
+    {
+      "feature": "qualy_gap_to_pole_pct",
+      "label": "Qualifying Gap to Pole (%)",
+      "group": "A_qualifying",
+      "std_coef": -0.16424520966576278,
+      "odds_ratio_per_sd": 0.848533927647104,
+      "coef_ci_lo": -0.31871491185907824,
+      "coef_ci_hi": -0.037252390256644605,
+      "perm_auc_linear_mean": 0.0014771578734586862,
+      "perm_auc_linear_std": 0.0014871855415494355,
+      "perm_auc_rf_mean": 0.0013882150798463777,
+      "perm_auc_rf_std": 0.0011920083251625608
+    },
+    {
+      "feature": "drv_career_starts_log",
+      "label": "Log Driver Prior Career Starts",
+      "group": "B_form",
+      "std_coef": 0.14168779064941955,
+      "odds_ratio_per_sd": 1.1522168594977447,
+      "coef_ci_lo": 0.04279988185858539,
+      "coef_ci_hi": 0.2834680297801491,
+      "perm_auc_linear_mean": 0.0002664674117069758,
+      "perm_auc_linear_std": 0.0008498167946769465,
+      "perm_auc_rf_mean": 4.692598688958623e-05,
+      "perm_auc_rf_std": 0.0002938542360584238
+    }
+  ],
+  "figures": {
+    "fig07": "C:\\Users\\david\\OneDrive\\AI UAB\\MACHINE LEARNING\\project\\reports\\figures\\followup2\\fig07_model_comparison_cv_vs_test.png",
+    "fig08": "C:\\Users\\david\\OneDrive\\AI UAB\\MACHINE LEARNING\\project\\reports\\figures\\followup2\\fig08_ablation_7subsets_and_shapley.png",
+    "fig09": "C:\\Users\\david\\OneDrive\\AI UAB\\MACHINE LEARNING\\project\\reports\\figures\\followup2\\fig09_regularization_and_bias_variance.png",
+    "fig10": "C:\\Users\\david\\OneDrive\\AI UAB\\MACHINE LEARNING\\project\\reports\\figures\\followup2\\fig10_interpretability_weights_and_permutation.png",
+    "fig11": "C:\\Users\\david\\OneDrive\\AI UAB\\MACHINE LEARNING\\project\\reports\\figures\\followup2\\fig11_roc_pr_calibration_and_boundary.png",
+    "fig12": "C:\\Users\\david\\OneDrive\\AI UAB\\MACHINE LEARNING\\project\\reports\\figures\\followup2\\fig12_error_analysis_and_regime_robustness.png"
+  }
+}

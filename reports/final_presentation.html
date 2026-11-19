@@ -1,0 +1,2094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predicting Formula 1 Points Finishes (2010–2024) — Team 05 Final Presentation</title>
+
+    <!-- Distinctive Motorsport Editorial Typography (Google Fonts; graceful offline fallbacks) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Barlow+Condensed:wght@600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===========================================
+           THEME DESIGN SYSTEM: PIT-WALL TELEMETRY EDITORIAL
+           Dominant light Swiss canvas (#F6F5F0) for data slides so
+           publication matplotlib figures integrate natively, punctuated
+           by Carbon Asphalt dark slides (#0B0D12) for Hero, Climax,
+           Error Ceiling, and Closing beats.
+           Sharp FIA Signal Red (#E10600) + Telemetry Teal (#00A19B).
+           =========================================== */
+        :root {
+            /* Surface & Ink Palette */
+            --bg-light: #F6F5F0;
+            --bg-surface: #FFFFFF;
+            --bg-muted: #ECEAE2;
+            --bg-carbon: #0B0D12;
+            --bg-carbon-card: #141822;
+            --bg-carbon-elev: #1B2130;
+
+            --ink-primary: #0E1117;
+            --ink-secondary: #475569;
+            --ink-muted: #64748B;
+            --ink-on-dark: #F8FAFC;
+            --ink-on-dark-muted: #94A3B8;
+
+            /* Brand & Signal Accents (Cohesive Restraint) */
+            --f1-red: #E10600;
+            --f1-red-soft: rgba(225, 6, 0, 0.10);
+            --telemetry-teal: #009E73;
+            --telemetry-teal-soft: rgba(0, 158, 115, 0.11);
+            --telemetry-blue: #0072B2;
+            --telemetry-amber: #D97706;
+            --border-light: #DDDAD0;
+            --border-dark: rgba(255, 255, 255, 0.12);
+
+            /* Typography Families */
+            --font-display: 'Barlow Condensed', 'Archivo Black', Impact, sans-serif;
+            --font-heavy: 'Archivo Black', 'Barlow Condensed', Impact, sans-serif;
+            --font-body: 'DM Sans', 'Segoe UI', sans-serif;
+            --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+
+            /* Fluid Viewport-Scaled Typography */
+            --title-size: clamp(2.1rem, 4.6vw, 3.85rem);
+            --h2-size: clamp(1.35rem, 2.55vw, 2.15rem);
+            --h3-size: clamp(0.95rem, 1.35vw, 1.18rem);
+            --body-size: clamp(0.76rem, 1.08vw, 0.96rem);
+            --small-size: clamp(0.66rem, 0.88vw, 0.80rem);
+            --micro-size: clamp(0.58rem, 0.75vw, 0.70rem);
+
+            /* Fluid Spacing Rhythm */
+            --slide-padding: clamp(1.2rem, 2.8vw, 2.6rem);
+            --content-gap: clamp(0.55rem, 1.3vw, 1.15rem);
+            --element-gap: clamp(0.35rem, 0.8vw, 0.7rem);
+
+            /* Motion Tokens */
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --duration-fast: 0.38s;
+            --duration-normal: 0.62s;
+        }
+
+        /* ===========================================
+           BASE RESET
+           =========================================== */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ===========================================
+           VIEWPORT FITTING: MANDATORY BASE STYLES
+           Included verbatim from viewport-base.css to guarantee
+           strict 100vh viewport containment with zero scrolling.
+           =========================================== */
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+            font-family: var(--font-body);
+            background: var(--bg-carbon);
+            color: var(--ink-primary);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        html {
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            max-height: 100%;
+            overflow: hidden;
+            padding: var(--slide-padding);
+        }
+
+        .card, .container, .content-box {
+            max-width: min(94vw, 1220px);
+            max-height: min(82vh, 720px);
+        }
+
+        .feature-list, .bullet-list {
+            gap: clamp(0.35rem, 0.8vh, 0.75rem);
+        }
+
+        .feature-list li, .bullet-list li {
+            font-size: var(--body-size);
+            line-height: 1.42;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+            gap: clamp(0.5rem, 1.3vw, 1rem);
+        }
+
+        img, .image-container {
+            max-width: 100%;
+            max-height: min(50vh, 400px);
+            object-fit: contain;
+        }
+
+        @media (max-height: 700px) {
+            :root {
+                --slide-padding: clamp(0.75rem, 2vw, 1.6rem);
+                --content-gap: clamp(0.35rem, 1vw, 0.8rem);
+                --title-size: clamp(1.6rem, 3.8vw, 2.75rem);
+                --h2-size: clamp(1.1rem, 2.2vw, 1.65rem);
+                --body-size: clamp(0.70rem, 0.98vw, 0.86rem);
+            }
+        }
+
+        @media (max-height: 600px) {
+            :root {
+                --slide-padding: clamp(0.55rem, 1.6vw, 1.2rem);
+                --content-gap: clamp(0.28rem, 0.8vw, 0.6rem);
+                --title-size: clamp(1.35rem, 3.2vw, 2.1rem);
+                --body-size: clamp(0.65rem, 0.9vw, 0.80rem);
+            }
+            .nav-dots, .keyboard-hint, .decorative {
+                display: none;
+            }
+        }
+
+        @media (max-height: 500px) {
+            :root {
+                --slide-padding: clamp(0.4rem, 1.4vw, 0.9rem);
+                --title-size: clamp(1.1rem, 2.8vw, 1.6rem);
+                --h2-size: clamp(0.95rem, 2vw, 1.3rem);
+                --body-size: clamp(0.62rem, 0.85vw, 0.76rem);
+            }
+        }
+
+        @media (max-width: 600px) {
+            :root {
+                --title-size: clamp(1.4rem, 6.5vw, 2.4rem);
+            }
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.2s !important;
+            }
+            html {
+                scroll-behavior: auto;
+            }
+        }
+
+        /* ===========================================
+           SLIDE SURFACE VARIANTS (LIGHT TELEMETRY vs CARBON DARK)
+           =========================================== */
+        .slide--light {
+            background-color: var(--bg-light);
+            background-image:
+                linear-gradient(rgba(14, 17, 23, 0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(14, 17, 23, 0.025) 1px, transparent 1px);
+            background-size: 36px 36px;
+            color: var(--ink-primary);
+        }
+
+        .slide--dark {
+            background-color: var(--bg-carbon);
+            background-image:
+                radial-gradient(ellipse 65% 55% at 88% 15%, rgba(225, 6, 0, 0.16) 0%, transparent 62%),
+                radial-gradient(ellipse 50% 45% at 10% 90%, rgba(0, 158, 115, 0.11) 0%, transparent 58%),
+                linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+            color: var(--ink-on-dark);
+        }
+
+        /* Left racing kerb vertical stripe signature */
+        .slide::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: var(--f1-red);
+            z-index: 3;
+        }
+        .slide--teal-accent::before {
+            background: var(--telemetry-teal);
+        }
+
+        /* ===========================================
+           PERSISTENT CHROME: PROGRESS BAR, TIMING HEADER, NAV DOTS
+           =========================================== */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            width: 0%;
+            background: linear-gradient(90deg, var(--f1-red) 0%, #FF4D4D 65%, var(--telemetry-teal) 100%);
+            z-index: 9000;
+            transition: width 0.25s ease-out;
+        }
+
+        /* Per-slide top telemetry bar (works in BOTH live browser AND PDF print!) */
+        .telemetry-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: clamp(0.55rem, 1.15vh, 0.9rem) clamp(1.3rem, 3vw, 2.7rem) clamp(0.35rem, 0.7vh, 0.55rem);
+            border-bottom: 1px solid var(--border-light);
+            font-family: var(--font-mono);
+            font-size: var(--micro-size);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+        .slide--dark .telemetry-bar {
+            border-bottom-color: var(--border-dark);
+            color: var(--ink-on-dark-muted);
+        }
+
+        .sector-track {
+            display: flex;
+            align-items: center;
+            gap: clamp(0.5rem, 1.3vw, 1.15rem);
+        }
+        .sector-pill {
+            opacity: 0.36;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35em;
+        }
+        .sector-pill.active {
+            opacity: 1;
+            color: var(--f1-red);
+            font-weight: 700;
+        }
+        .slide--dark .sector-pill.active {
+            color: #FF423C;
+        }
+        .sector-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            display: inline-block;
+        }
+
+        .slide-meta-right {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            font-weight: 600;
+        }
+        .slide-counter {
+            color: var(--ink-primary);
+            font-weight: 700;
+        }
+        .slide--dark .slide-counter {
+            color: var(--ink-on-dark);
+        }
+
+        /* Main slide body container */
+        .slide-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: clamp(0.75rem, 1.6vh, 1.35rem) clamp(1.4rem, 3.1vw, 2.8rem) clamp(0.8rem, 1.7vh, 1.35rem);
+            gap: clamp(0.55rem, 1.25vh, 1.05rem);
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* Action Headline block (data-storytelling rule: insight-first headlines!) */
+        .slide-header {
+            flex-shrink: 0;
+        }
+        .kicker {
+            font-family: var(--font-mono);
+            font-size: var(--micro-size);
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--f1-red);
+            margin-bottom: 0.22rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+        .slide--teal-accent .kicker {
+            color: var(--telemetry-teal);
+        }
+        .slide-title {
+            font-family: var(--font-display);
+            font-size: var(--h2-size);
+            font-weight: 800;
+            line-height: 1.07;
+            letter-spacing: -0.01em;
+            color: var(--ink-primary);
+        }
+        .slide--dark .slide-title {
+            color: var(--ink-on-dark);
+        }
+        .title-accent {
+            color: var(--f1-red);
+        }
+        .title-teal {
+            color: var(--telemetry-teal);
+        }
+
+        /* Slide footer line */
+        .slide-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: clamp(0.3rem, 0.7vh, 0.5rem);
+            border-top: 1px solid var(--border-light);
+            font-family: var(--font-mono);
+            font-size: var(--micro-size);
+            color: var(--ink-muted);
+            flex-shrink: 0;
+        }
+        .slide--dark .slide-footer {
+            border-top-color: var(--border-dark);
+            color: var(--ink-on-dark-muted);
+        }
+
+        /* ===========================================
+           LAYOUT PRIMITIVES (ASYMMETRIC, DATA-FIRST, ZERO OVERFLOW)
+           =========================================== */
+        .layout-split {
+            display: grid;
+            grid-template-columns: 1.38fr 0.92fr;
+            gap: clamp(0.85rem, 1.8vw, 1.65rem);
+            align-items: stretch;
+            flex: 1;
+            min-height: 0;
+        }
+        .layout-split--even {
+            grid-template-columns: 1fr 1fr;
+        }
+        .layout-split--wide-left {
+            grid-template-columns: 1.55fr 0.85fr;
+        }
+        .layout-split--wide-right {
+            grid-template-columns: 0.88fr 1.42fr;
+        }
+
+        .layout-visual-band {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(0.5rem, 1.1vh, 0.9rem);
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* Crisp Figure Frame */
+        .figure-frame {
+            background: #FFFFFF;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: clamp(0.35rem, 0.8vw, 0.65rem);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 0;
+            flex: 1;
+            box-shadow: 0 2px 12px rgba(14, 17, 23, 0.05);
+        }
+        .slide--dark .figure-frame {
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+        }
+        .figure-frame img {
+            width: 100%;
+            height: 100%;
+            max-height: min(56vh, 470px);
+            object-fit: contain;
+            border-radius: 4px;
+        }
+        .figure-frame--tall img {
+            max-height: min(63vh, 520px);
+        }
+        .figure-frame--compact img {
+            max-height: min(49vh, 395px);
+        }
+
+        /* Telemetry Metric Cards & Stat Strips */
+        .kpi-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: clamp(0.5rem, 1vw, 0.85rem);
+            flex-shrink: 0;
+        }
+        .kpi-strip--3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .kpi-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            border-top: 3px solid var(--ink-primary);
+            border-radius: 6px;
+            padding: clamp(0.5rem, 1vh, 0.8rem) clamp(0.65rem, 1.1vw, 1rem);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 0.18rem;
+        }
+        .slide--dark .kpi-card {
+            background: var(--bg-carbon-card);
+            border-color: var(--border-dark);
+            border-top-color: var(--f1-red);
+        }
+        .kpi-card--red, .slide--dark .kpi-card--red { border-top-color: var(--f1-red); }
+        .kpi-card--teal, .slide--dark .kpi-card--teal { border-top-color: var(--telemetry-teal); }
+        .kpi-card--blue, .slide--dark .kpi-card--blue { border-top-color: var(--telemetry-blue); }
+        .kpi-card--amber, .slide--dark .kpi-card--amber { border-top-color: var(--telemetry-amber); }
+
+        .kpi-label {
+            font-family: var(--font-mono);
+            font-size: var(--micro-size);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: var(--ink-muted);
+            font-weight: 600;
+        }
+        .slide--dark .kpi-label { color: var(--ink-on-dark-muted); }
+
+        .kpi-value {
+            font-family: var(--font-mono);
+            font-size: clamp(1.15rem, 2.15vw, 1.78rem);
+            font-weight: 700;
+            line-height: 1.1;
+            font-variant-numeric: tabular-nums;
+            color: var(--ink-primary);
+        }
+        .slide--dark .kpi-value { color: var(--ink-on-dark); }
+        .kpi-value--red { color: var(--f1-red) !important; }
+        .kpi-value--teal { color: var(--telemetry-teal) !important; }
+        .kpi-value--blue { color: var(--telemetry-blue) !important; }
+        .kpi-value--amber { color: var(--telemetry-amber) !important; }
+
+        .kpi-sub {
+            font-size: var(--small-size);
+            color: var(--ink-secondary);
+            line-height: 1.28;
+        }
+        .slide--dark .kpi-sub { color: var(--ink-on-dark-muted); }
+
+        /* Callout Panels */
+        .panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            border-left: 4px solid var(--ink-primary);
+            border-radius: 6px;
+            padding: clamp(0.6rem, 1.2vh, 0.95rem) clamp(0.75rem, 1.3vw, 1.15rem);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(0.32rem, 0.7vh, 0.55rem);
+        }
+        .slide--dark .panel {
+            background: var(--bg-carbon-card);
+            border-color: var(--border-dark);
+            border-left-color: var(--f1-red);
+        }
+        .panel--red { border-left-color: var(--f1-red); }
+        .panel--teal { border-left-color: var(--telemetry-teal); }
+        .panel--blue { border-left-color: var(--telemetry-blue); }
+        .panel--amber { border-left-color: var(--telemetry-amber); }
+
+        .panel-title {
+            font-family: var(--font-display);
+            font-size: var(--h3-size);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--ink-primary);
+        }
+        .slide--dark .panel-title { color: var(--ink-on-dark); }
+        .panel-title--red { color: var(--f1-red) !important; }
+        .panel-title--teal { color: var(--telemetry-teal) !important; }
+        .panel-title--blue { color: var(--telemetry-blue) !important; }
+
+        .stack {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(0.5rem, 1.1vh, 0.85rem);
+            justify-content: center;
+            min-height: 0;
+        }
+
+        .clean-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(0.34rem, 0.75vh, 0.62rem);
+        }
+        .clean-list li {
+            font-size: var(--body-size);
+            line-height: 1.38;
+            padding-left: 1.05em;
+            position: relative;
+        }
+        .clean-list li::before {
+            content: "▪";
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: var(--f1-red);
+            font-weight: 700;
+        }
+        .clean-list--teal li::before { color: var(--telemetry-teal); }
+        .clean-list--blue li::before { color: var(--telemetry-blue); }
+
+        .mono-tag {
+            font-family: var(--font-mono);
+            font-size: 0.9em;
+            background: rgba(14, 17, 23, 0.07);
+            padding: 0.08em 0.36em;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+        .slide--dark .mono-tag {
+            background: rgba(255, 255, 255, 0.10);
+            color: #F8FAFC;
+        }
+
+        /* ===========================================
+           SLIDE 1: HERO CARBON PIT-WALL TITLE SLIDE
+           =========================================== */
+        .hero-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: clamp(1.4rem, 3.2vh, 2.4rem) clamp(1.8rem, 4vw, 3.6rem) clamp(1.3rem, 2.8vh, 2.2rem);
+            position: relative;
+            z-index: 2;
+        }
+        .hero-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .fia-lights {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .fia-light {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background: var(--f1-red);
+            box-shadow: 0 0 12px rgba(225, 6, 0, 0.85);
+        }
+        .fia-light--off {
+            background: #2D3342;
+            box-shadow: none;
+        }
+        .hero-course-badge {
+            font-family: var(--font-mono);
+            font-size: var(--small-size);
+            color: var(--ink-on-dark-muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            border: 1px solid var(--border-dark);
+            padding: 0.35rem 0.75rem;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .hero-center {
+            max-width: 1020px;
+            margin: auto 0;
+        }
+        .hero-eyebrow {
+            font-family: var(--font-mono);
+            font-size: var(--small-size);
+            color: #FF423C;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            margin-bottom: 0.55rem;
+        }
+        .hero-title {
+            font-family: var(--font-heavy);
+            font-size: clamp(2.15rem, 4.7vw, 3.95rem);
+            line-height: 1.02;
+            letter-spacing: -0.02em;
+            color: #FFFFFF;
+            margin-bottom: 0.75rem;
+        }
+        .hero-subtitle {
+            font-size: clamp(0.95rem, 1.55vw, 1.28rem);
+            color: #CBD5E1;
+            line-height: 1.42;
+            max-width: 820px;
+            margin-bottom: 1.2rem;
+        }
+        .hero-authors {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.65rem 1.4rem;
+            font-size: var(--body-size);
+            color: #E2E8F0;
+            padding-top: 0.85rem;
+            border-top: 1px solid var(--border-dark);
+        }
+        .author-team {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: var(--telemetry-teal);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        /* ===========================================
+           TABLES (TIMING-TOWER STYLE)
+           =========================================== */
+        .timing-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--small-size);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .slide--dark .timing-table {
+            background: var(--bg-carbon-card);
+            border-color: var(--border-dark);
+            color: var(--ink-on-dark);
+        }
+        .timing-table th {
+            background: #0E1117;
+            color: #F8FAFC;
+            font-family: var(--font-mono);
+            font-size: var(--micro-size);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            text-align: left;
+            padding: clamp(0.38rem, 0.75vh, 0.55rem) clamp(0.45rem, 0.8vw, 0.75rem);
+        }
+        .timing-table td {
+            padding: clamp(0.34rem, 0.68vh, 0.52rem) clamp(0.45rem, 0.8vw, 0.75rem);
+            border-bottom: 1px solid var(--border-light);
+            font-variant-numeric: tabular-nums;
+        }
+        .slide--dark .timing-table td {
+            border-bottom-color: var(--border-dark);
+        }
+        .timing-table tr:last-child td {
+            border-bottom: none;
+        }
+        .badge {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: var(--micro-size);
+            font-weight: 700;
+            padding: 0.14rem 0.45rem;
+            border-radius: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .badge--win { background: var(--telemetry-teal-soft); color: var(--telemetry-teal); }
+        .badge--miss { background: var(--f1-red-soft); color: var(--f1-red); }
+        .slide--dark .badge--miss { background: rgba(225, 6, 0, 0.24); color: #FF7670; }
+        .slide--dark .badge--win { background: rgba(0, 158, 115, 0.22); color: #34D399; }
+
+        /* Feature survival pills (Slide 9 L1 Lasso) */
+        .pill-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+        }
+        .feat-pill {
+            font-family: var(--font-mono);
+            font-size: var(--micro-size);
+            font-weight: 600;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            border: 1px solid transparent;
+        }
+        .feat-pill--a { background: rgba(0, 114, 178, 0.12); color: #005A8D; border-color: rgba(0, 114, 178, 0.28); }
+        .feat-pill--b { background: rgba(217, 119, 6, 0.12); color: #9A5000; border-color: rgba(217, 119, 6, 0.28); }
+        .feat-pill--zero { background: rgba(100, 116, 139, 0.10); color: #64748B; text-decoration: line-through; }
+
+        /* Audit readout box (Slide 4) */
+        .audit-terminal {
+            background: #0E1117;
+            color: #E2E8F0;
+            font-family: var(--font-mono);
+            font-size: var(--small-size);
+            border-radius: 7px;
+            padding: clamp(0.65rem, 1.3vh, 1rem) clamp(0.85rem, 1.4vw, 1.2rem);
+            border-left: 4px solid var(--telemetry-teal);
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+        .audit-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.10);
+            padding-bottom: 0.24rem;
+        }
+        .audit-line:last-child { border-bottom: none; padding-bottom: 0; }
+        .audit-pass { color: #34D399; font-weight: 700; }
+
+        /* ===========================================
+           STAGGERED ENTRANCE ANIMATIONS
+           =========================================== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(18px);
+            transition: opacity var(--duration-normal) var(--ease-out-expo),
+                        transform var(--duration-normal) var(--ease-out-expo);
+        }
+        .slide.visible .reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .slide.visible .reveal:nth-child(1) { transition-delay: 0.05s; }
+        .slide.visible .reveal:nth-child(2) { transition-delay: 0.13s; }
+        .slide.visible .reveal:nth-child(3) { transition-delay: 0.21s; }
+        .slide.visible .reveal:nth-child(4) { transition-delay: 0.29s; }
+
+        /* ===========================================
+           FLOATING CONTROLS: NAV DOTS, SPEAKER NOTES, INLINE EDIT
+           =========================================== */
+        .nav-dots {
+            position: fixed;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            z-index: 8000;
+        }
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(100, 116, 139, 0.45);
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s ease, background 0.2s ease;
+            padding: 0;
+        }
+        .nav-dot.active {
+            background: var(--f1-red);
+            transform: scale(1.45);
+        }
+
+        /* Keyboard / presenter hint pill */
+        .keyboard-hint {
+            position: fixed;
+            bottom: 10px;
+            right: 14px;
+            z-index: 8000;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            background: rgba(14, 17, 23, 0.82);
+            color: #CBD5E1;
+            padding: 4px 9px;
+            border-radius: 4px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            opacity: 0.72;
+            transition: opacity 0.2s ease;
+        }
+        .keyboard-hint:hover { opacity: 1; }
+
+        /* Presenter Speaker Notes Drawer (Press N) */
+        .notes-drawer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(11, 13, 18, 0.96);
+            color: #F1F5F9;
+            border-top: 2px solid var(--f1-red);
+            padding: 14px 28px;
+            z-index: 9500;
+            transform: translateY(105%);
+            transition: transform 0.28s var(--ease-out-expo);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .notes-drawer.open {
+            transform: translateY(0);
+        }
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #FF5953;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+        }
+        .notes-close {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.25);
+            color: #F1F5F9;
+            padding: 2px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-size: 11px;
+        }
+
+        /* Inline Editing Controls (JS-controlled hover with 400ms grace period) */
+        .edit-hotzone {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 72px;
+            height: 72px;
+            z-index: 9998;
+            cursor: pointer;
+        }
+        .edit-toolbar {
+            position: fixed;
+            top: 10px;
+            left: 14px;
+            display: flex;
+            gap: 6px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            z-index: 9999;
+        }
+        .edit-toolbar.show,
+        .edit-toolbar.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .edit-btn {
+            background: #0E1117;
+            color: #FFFFFF;
+            border: 1px solid rgba(255,255,255,0.22);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .edit-btn.active {
+            background: var(--f1-red);
+            border-color: var(--f1-red);
+        }
+        [contenteditable="true"] {
+            outline: 1.5px dashed var(--f1-red);
+            outline-offset: 2px;
+            border-radius: 3px;
+        }
+
+        /* ===========================================
+           PRINT-TO-PDF EXACT 16:9 WIDESCREEN FIDELITY
+           Ensures headless Chrome/Edge exports an identical
+           14-page vector/high-DPI PDF with zero animation blanking.
+           =========================================== */
+        @page {
+            size: 13.333in 7.5in;
+            margin: 0;
+        }
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            html, body {
+                height: auto !important;
+                overflow: visible !important;
+                scroll-snap-type: none !important;
+            }
+            .slide {
+                width: 13.333in !important;
+                height: 7.5in !important;
+                page-break-after: always;
+                break-after: page;
+                overflow: hidden !important;
+            }
+            .slide:last-of-type {
+                page-break-after: auto;
+                break-after: auto;
+            }
+            .reveal {
+                opacity: 1 !important;
+                transform: none !important;
+                transition: none !important;
+            }
+            .progress-bar, .nav-dots, .keyboard-hint, .notes-drawer, .edit-hotzone, .edit-toolbar {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Progress Bar -->
+    <div class="progress-bar" id="progressBar" aria-hidden="true"></div>
+
+    <!-- Side Navigation Dots -->
+    <nav class="nav-dots" id="navDots" aria-label="Slide navigation"></nav>
+
+    <!-- Subtle Presenter Hotkeys Hint -->
+    <div class="keyboard-hint">←/→ Navigate · N Speaker Notes · E Edit · F Fullscreen</div>
+
+    <!-- Inline Editor Hotzone & Toolbar (JS-driven, 400ms grace period) -->
+    <div class="edit-hotzone" id="editHotzone" title="Edit mode (E)"></div>
+    <div class="edit-toolbar" id="editToolbar">
+        <button class="edit-btn" id="editToggle">Edit (E)</button>
+        <button class="edit-btn" id="saveHtmlBtn" style="display:none;">Export HTML</button>
+    </div>
+
+    <!-- Presenter Speaker Notes Drawer (Press N) -->
+    <aside class="notes-drawer" id="notesDrawer" aria-live="polite">
+        <div class="notes-header">
+            <span id="notesSlideLabel">Speaker Notes — Slide 1</span>
+            <button class="notes-close" id="notesClose">Close (N)</button>
+        </div>
+        <div id="notesText"></div>
+    </aside>
+
+    <!-- =================================================================
+         SLIDE 01 — HERO TITLE (CARBON DARK)
+         ================================================================= -->
+    <section class="slide slide--dark visible" data-sector="0" data-notes="OPENING (30s): Good morning everyone. Today Team 05 presents our end-to-end study predicting Formula 1 points finishes from 2010 to 2024. Our goal was not to chase a leaked Kaggle score, but to build a strictly causal pre-race pipeline and run a complete 7-subset ablation isolating what actually predicts Sunday points before lights out.">
+        <div class="hero-wrap">
+            <div class="hero-top reveal">
+                <div class="fia-lights" aria-label="FIA Start Lights">
+                    <span class="fia-light"></span>
+                    <span class="fia-light"></span>
+                    <span class="fia-light"></span>
+                    <span class="fia-light"></span>
+                    <span class="fia-light"></span>
+                    <span style="font-family:var(--font-mono);font-size:var(--micro-size);color:#94A3B8;margin-left:0.5rem;letter-spacing:0.12em;">LIGHTS OUT · STRICTLY PRE-RACE ML</span>
+                </div>
+                <div class="hero-course-badge">Fundamentals of Machine Learning · UAB 2026–27</div>
+            </div>
+
+            <div class="hero-center">
+                <div class="hero-eyebrow reveal">Final Project Defense · OSEMN Deliveries 1 &amp; 2</div>
+                <h1 class="hero-title reveal">Predicting Formula 1<br>Points Finishes <span style="color:#E10600;">(2010–2024)</span></h1>
+                <p class="hero-subtitle reveal">A strictly temporal, zero-leakage ablation of <strong>Qualifying Context</strong>, <strong>Rolling Constructor Momentum</strong>, and <strong>Historical Circuit Affinity</strong> across 9 curriculum ML models.</p>
+                <div class="hero-authors reveal">
+                    <span class="author-team">Project Team 05</span>
+                    <span>Marc Font Hostalet</span>
+                    <span style="color:#64748B;">/</span>
+                    <span>David Redrejo Pérez</span>
+                    <span style="color:#64748B;">/</span>
+                    <span>Elias Barreiro Pena</span>
+                    <span style="margin-left:auto;font-family:var(--font-mono);font-size:var(--small-size);color:#94A3B8;">Instructors: O. Mulayim, D. Karatzas</span>
+                </div>
+            </div>
+
+            <div class="kpi-strip reveal">
+                <div class="kpi-card kpi-card--red">
+                    <span class="kpi-label">Modern Top-10 Era</span>
+                    <span class="kpi-value">6,436</span>
+                    <span class="kpi-sub">Entries · 305 GPs · 47.4% Top-10</span>
+                </div>
+                <div class="kpi-card kpi-card--teal">
+                    <span class="kpi-label">Leakage Mutation Audit</span>
+                    <span class="kpi-value kpi-value--teal">0.0000</span>
+                    <span class="kpi-sub">Future &amp; same-race max abs diff</span>
+                </div>
+                <div class="kpi-card kpi-card--blue">
+                    <span class="kpi-label">Test Lift vs grid ≤ 10</span>
+                    <span class="kpi-value kpi-value--blue">+3.31 pp</span>
+                    <span class="kpi-sub">80.43% Acc · 0.873 AUC · p = 0.0012</span>
+                </div>
+                <div class="kpi-card kpi-card--amber">
+                    <span class="kpi-label">Grid-Penalty Recovery</span>
+                    <span class="kpi-value kpi-value--amber">+24.1 pp</span>
+                    <span class="kpi-sub">55.4% baseline → 79.5% L2 Logistic</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         SLIDE 02 — THE CONFLICT: WHY MOST F1 NOTEBOOKS CHEAT & HYPOTHESES
+         ================================================================= -->
+    <section class="slide slide--light" data-sector="1" data-notes="THE HOOK & STAKES (45s): Before touching a single algorithm, we asked why hundreds of public F1 notebooks report 90%+ accuracy. Almost all commit three fatal errors: mixing pre-2010 scoring rules, leaking in-race data like pit stops or post-race standings, and using random splits. Once you remove all leakage, a one-line heuristic — grid <= 10 — already gets 77.1%! That sets a brutally honest benchmark for our three falsifiable hypotheses.">
+        <header class="telemetry-bar">
+            <div class="sector-track">
+                <span class="sector-pill active"><span class="sector-dot"></span>S1 Framing</span>
+                <span class="sector-pill">S2 Scrub &amp; EDA</span>
+                <span class="sector-pill">S3 Benchmark</span>
+                <span class="sector-pill">S4 Ablation</span>
+                <span class="sector-pill">S5 Appraisal</span>
+            </div>
+            <div class="slide-meta-right"><span>Team 05</span><span class="slide-counter">02 / 14</span></div>
+        </header>
+        <div class="slide-body">
+            <div class="slide-header reveal">
+                <div class="kicker">01 · Problem Framing &amp; Scientific Stakes</div>
+                <h2 class="slide-title">Predicting <span class="mono-tag">grid ≤ 10</span> Already Scores <span class="title-accent">77.1%</span> — So Why Do Most F1 Models Overclaim?</h2>
+            </div>
+
+            <div class="layout-split layout-split--even reveal" style="align-items:center;">
+                <div class="stack">
+                    <div class="panel panel--red">
+                        <div class="panel-title panel-title--red">Three Fatal Flaws in Typical Public F1 Notebooks</div>
+                        <ul class="clean-list">
+                            <li><strong>Moving Target Regime:</strong> Mixing 1950–2009 races (Top 5/6/8 scoring) with post-2010 Top-10 scoring conflates changing rules and field sizes.</li>
+                            <li><strong>In-Race &amp; Teammate Leakage:</strong> Using <span class="mono-tag">lap_times</span>, <span class="mono-tag">pit_stops</span>, target <span class="mono-tag">status</span>, post-race standings, or unshifted 2-car constructor rolls predicts the race <em>after it happened</em>.</li>
+                            <li><strong>Random Splits Across Seasons:</strong> Shuffling rows leaks November car upgrades backward to predict March races.</li>
+                        </ul>
+                    </div>
+
+                    <div class="kpi-strip kpi-strip--3">
+                        <div class="kpi-card">
+                            <span class="kpi-label">Delivery 1 (Dec 4)</span>
+                            <span class="kpi-value" style="font-size:clamp(0.95rem,1.35vw,1.18rem);">Obtain·Scrub·EDA</span>
+                            <span class="kpi-sub">Notebook 01 + Leakage Audit</span>
+                        </div>
+                        <div class="kpi-card kpi-card--blue">
+                            <span class="kpi-label">Delivery 2 (Dec 11)</span>
+                            <span class="kpi-value" style="font-size:clamp(0.95rem,1.35vw,1.18rem);">Model·Ablate·Eval</span>
+                            <span class="kpi-sub">Notebook 02 + 35 Ablation Runs</span>
+                        </div>
+                        <div class="kpi-card kpi-card--teal">
+                            <span class="kpi-label">Target Balance</span>
+                            <span class="kpi-value kpi-value--teal" style="font-size:clamp(0.95rem,1.35vw,1.18rem);">47.39% Top-10</span>
+                            <span class="kpi-sub">0 discrepancies vs points &gt; 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stack">
+                    <div class="panel panel--teal" style="padding:clamp(0.85rem,1.8vh,1.35rem) clamp(0.95rem,1.6vw,1.35rem);">
+                        <div class="panel-title panel-title--teal">Three Falsifiable Research Hypotheses</div>
+                        <ul class="clean-list clean-list--teal" style="gap:clamp(0.55rem,1.3vh,0.95rem);">
+                            <li><strong>H1 — Factor Group Hierarchy (Centerpiece):</strong><br><strong>Qualifying Context (A)</strong> and <strong>Rolling Momentum (B)</strong> carry substantially greater predictive weight than <strong>Historical Circuit Affinity (C)</strong>; adding <span class="mono-tag">C</span> onto <span class="mono-tag">A+B</span> adds negligible gain.</li>
+                            <li><strong>H2 — Regularized Linear Competitiveness:</strong><br><strong>L1/L2 Logistic Regression</strong> and <strong>Linear SVM</strong> match non-linear ensembles (Random Forest, RBF SVM, Gradient Boosting) out-of-sample while preserving full interpretability and superior calibration.</li>
+                            <li><strong>H3 — Beating the Strong Domain Baseline:</strong><br>Multi-group pre-race ML significantly beats scrubbed <span class="mono-tag">grid ≤ 10</span> (~77%), driven by <strong>grid-penalty recoveries</strong> and the <strong>P8–P13 midfield transition zone</strong>.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="slide-footer">
+                <span>Source: Ergast / Kaggle F1 World Championship (14 relational CSV tables, 1950–2024)</span>
+                <span>Delivery 1 → Delivery 2 Scientific Protocol</span>
+            </footer>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         SLIDE 03 — PERIOD RESTRICTION & STRICT TEMPORAL SPLIT (FIG 01)
+         ================================================================= -->
+    <section class="slide slide--light" data-sector="2" data-notes="OBTAIN & TEMPORAL SPLIT (45s): On the left, you can see why restricting to 2010–2024 is essential: prior eras awarded points to only 23%–39% of starters. Since 2010, Top-10 scoring gives a balanced 47.4% target. On the right is our strict season split: 2010–2021 development with 5-fold expanding-window CV on 2017–2021, and 2022–2024 held out completely to test genuine out-of-regime generalization across F1's Ground-Effect technical era.">
+        <header class="telemetry-bar">
+            <div class="sector-track">
+                <span class="sector-pill">S1 Framing</span>
+                <span class="sector-pill active"><span class="sector-dot"></span>S2 Scrub &amp; EDA</span>
+                <span class="sector-pill">S3 Benchmark</span>
+                <span class="sector-pill">S4 Ablation</span>
+                <span class="sector-pill">S5 Appraisal</span>
+            </div>
+            <div class="slide-meta-right"><span>Team 05</span><span class="slide-counter">03 / 14</span></div>
+        </header>
+        <div class="slide-body">
+            <div class="slide-header reveal">
+                <div class="kicker">02 · Obtain &amp; Temporal Evaluation Protocol</div>
+                <h2 class="slide-title">2010–2024 Locks a <span class="title-teal">47.4% Balanced Target</span>; 2022–2024 Tests True Ground-Effect Generalization</h2>
+            </div>
+
+            <div class="layout-visual-band reveal">
+                <div class="figure-frame figure-frame--compact">
+                    <img src="figures/followup1/fig01_scoring_eras_and_temporal_split.png" alt="Scoring rule regimes 1950-2024 and strict season-based temporal split">
+                </div>
+                <div class="kpi-strip">
+                    <div class="kpi-card kpi-card--blue">
+                        <span class="kpi-label">Historical Warm-Start</span>
+                        <span class="kpi-value">1995–2009</span>
+                        <span class="kpi-sub">Past counts/priors only — never targets</span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-label">Development Split</span>
+                        <span class="kpi-value">2010–2021</span>
+                        <span class="kpi-sub">12 seasons · 237 GPs · n = 5,077</span>
+                    </div>
+                    <div class="kpi-card kpi-card--amber">
+                        <span class="kpi-label">Expanding-Window CV</span>
+                        <span class="kpi-value">5 Folds</span>
+                        <span class="kpi-sub">Val on 2017, 18, 19, 20, 21 (&lt; y_k train)</span>
+                    </div>
+                    <div class="kpi-card kpi-card--red">
+                        <span class="kpi-label">Held-Out Test Era</span>
+                        <span class="kpi-value kpi-value--red">2022–2024</span>
+                        <span class="kpi-sub">Ground-Effect · 68 GPs · n = 1,359</span>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="slide-footer">
+                <span>All exploratory feature-target statistics strictly confined to 2010–2021 Development</span>
+                <span>fig01 · Zero Test-Set Peeking</span>
+            </footer>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         SLIDE 04 — REAL-WORLD SCRUBBING & AUTOMATED LEAKAGE AUDIT
+         ================================================================= -->
+    <section class="slide slide--light slide--teal-accent" data-sector="2" data-notes="SCRUBBING & LEAKAGE AUDIT (50s): Real relational data always hides traps. First, Ergast encodes 85 pit-lane starts as grid=0 — so naive grid<=10 treats pit-lane starts as pole position! Fixing grid=0 immediately lifts the baseline by +0.89 percentage points. Second, Ergast reverted Kick Sauber in 2024 back to 2018 ID 15 after five years as Alfa Romeo — our canonical lineage map repairs longitudinal continuity across 23 raw IDs into 13 lineages. Finally, we don't just claim zero leakage: our automated test suite inverts all 2022–2024 outcomes AND a mid-season race, proving bit-for-bit 0.0000 difference.">
+        <header class="telemetry-bar">
+            <div class="sector-track">
+                <span class="sector-pill">S1 Framing</span>
+                <span class="sector-pill active"><span class="sector-dot"></span>S2 Scrub &amp; EDA</span>
+                <span class="sector-pill">S3 Benchmark</span>
+                <span class="sector-pill">S4 Ablation</span>
+                <span class="sector-pill">S5 Appraisal</span>
+            </div>
+            <div class="slide-meta-right"><span>Team 05</span><span class="slide-counter">04 / 14</span></div>
+        </header>
+        <div class="slide-body">
+            <div class="slide-header reveal">
+                <div class="kicker">03 · Domain Scrubbing &amp; Adversarial Verification</div>
+                <h2 class="slide-title">Two Hidden Ergast Bugs Silently Corrupt Naive Pipelines — Verified Zero Leakage (<span class="title-teal">0.0000</span>)</h2>
+            </div>
+
+            <div class="layout-split layout-split--even reveal">
+                <div class="stack">
+                    <div class="panel panel--red">
+                        <div class="panel-title panel-title--red">Bug 1 · Pit-Lane Starts Coded as <span class="mono-tag">grid == 0</span></div>
+                        <ul class="clean-list">
+                            <li><strong>Raw Trap:</strong> 85 pit-lane / DNS entries carry <span class="mono-tag">grid = 0</span>, causing naive <span class="mono-tag">grid ≤ 10</span> to classify them as <strong>Pole Position</strong> (<span class="mono-tag">76.03%</span>).</li>
+                            <li><strong>Domain Fix:</strong> Remap <span class="mono-tag">grid == 0</span> → <span class="mono-tag">n_entries + 1</span> + binary flag <span class="mono-tag">is_pit_lane_start</span> → instant <strong>+0.89 pp</strong> lift to <strong>76.91%</strong>.</li>
+                        </ul>
+                    </div>
+
+                    <div class="panel panel--amber">
+                        <div class="panel-title" style="color:var(--telemetry-amber);">Bug 2 · Rebrand Breaks &amp; 2024 Sauber ID Reversion</div>
+                        <ul class="clean-list">
+                            <li><strong>Raw Trap:</strong> Kick Sauber (2024) reverted to <span class="mono-tag">ID 15</span> (last used in 2018!) after 5 seasons as Alfa Romeo (<span class="mono-tag">ID 51</span>) — feeding 2018 form into 2024 Round 1.</li>
+                            <li><strong>Domain Fix:</strong> Deterministic lineage map (<span class="mono-tag">23 IDs → 13 lineages</span>): <em>Sauber ↔ Alfa</em>, <em>Toro Rosso → AlphaTauri → RB</em>, <em>Force India → Aston</em>.</li>
+                        </ul>
+                    </div>
+
+                    <div class="panel panel--blue">
+                        <div class="panel-title panel-title--blue">Bug 3 · Same-Race Teammate Leakage Prevention</div>
+                        <p style="font-size:var(--body-size);line-height:1.38;">Row-wise <span class="mono-tag">.shift(1)</span> leaks Car #1's finish into Car #2 in the same GP. All constructor &amp; circuit features aggregate to <span class="mono-tag">(entity, raceId)</span> first, then shift strictly by 1 race.</p>
+                    </div>
+                </div>
+
+                <div class="stack">
+                    <div class="audit-terminal">
+                        <div style="color:#94A3B8;font-size:var(--micro-size);letter-spacing:0.1em;margin-bottom:0.2rem;">$ python -m unittest tests/test_pipeline.py -v</div>
+                        <div class="audit-line"><span>FORBIDDEN_INRACE_COLUMNS overlap</span><span class="audit-pass">0 [PASS]</span></div>
+                        <div class="audit-line"><span>Feature groups strictly disjoint</span><span class="audit-pass">8 + 11 + 7 = 26 [PASS]</span></div>
+                        <div class="audit-line"><span>Future mutation (invert all 2022–24)</span><span class="audit-pass">max_diff = 0.0000 [PASS]</span></div>
+                        <div class="audit-line"><span>Same-race mutation (invert 2023 R10)</span><span class="audit-pass">max_diff = 0.0000 [PASS]</span></div>
+                        <div class="audit-line"><span>Next-race rolling update check (R11)</span><span class="audit-pass">diff = 5.8333 [PASS]</span></div>
+                        <div class="audit-line"><span>Monotonic temporal CV &amp; Test bounds</span><span class="audit-pass">2021 &lt; 2022 [PASS]</span></div>
+                    </div>
+
+                    <div class="panel panel--teal">
+                        <div class="panel-title panel-title--teal">Zero Global Imputation Leakage</div>
+                        <ul class="clean-list clean-list--teal">
+                            <li>Only 24 missing qualifying rows (0.37%), 86 missing Q1 lap times (1.3%), 55 rookie starts (0.85%), and 8 debut-team rows (0.12%).</li>
+                            <li>All <span class="mono-tag">SimpleImputer(median)</span> &amp; <span class="mono-tag">StandardScaler</span> transformations fit strictly inside each CV fold's <span class="mono-tag">Pipeline</span>.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="slide-footer">
+                <span>6/6 automated unit &amp; adversarial invariance tests pass in tests/test_pipeline.py</span>
+                <span>src/data.py · src/features.py</span>
+            </footer>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         SLIDE 05 — EDA DISCOVERY: MIDFIELD COLLAPSE & GRID x FORM (FIG 04)
+         ================================================================= -->
+    <section class="slide slide--light" data-sector="2" data-notes="EDA DISCOVERY (45s): Now, where does the 77% grid<=10 baseline actually fail? On 2010–2021 development data, grid<=10 scores 83.5% outside midfield, but collapses to just 59.6% inside P8–P13. Look at the heatmap on the left: starting P16+ or pit-lane yields only 2% points for bottom-quintile teams, yet 66% for top-quintile constructors! Conversely, a bottom-quintile car qualifying P6–P10 only holds points 43% of the time. That diagonal gradient immediately tells us a tilted linear boundary in Grid-vs-Form space should beat a vertical grid cutoff.">
+        <header class="telemetry-bar">
+            <div class="sector-track">
+                <span class="sector-pill">S1 Framing</span>
+                <span class="sector-pill active"><span class="sector-dot"></span>S2 Scrub &amp; EDA</span>
+                <span class="sector-pill">S3 Benchmark</span>
+                <span class="sector-pill">S4 Ablation</span>
+                <span class="sector-pill">S5 Appraisal</span>
+            </div>
+            <div class="slide-meta-right"><span>Team 05</span><span class="slide-counter">05 / 14</span></div>
+        </header>
+        <div class="slide-body">
+            <div class="slide-header reveal">
+                <div class="kicker">04 · Exploratory Data Analysis (Dev 2010–2021 Only)</div>
+                <h2 class="slide-title">Inside P8–P13, <span class="mono-tag">grid ≤ 10</span> Collapses to <span class="title-accent">59.6%</span> — Constructor Form Splits It Wide Open</h2>
+            </div>
+
+            <div class="layout-visual-band reveal">
+                <div class="figure-frame figure-frame--compact">
+                    <img src="figures/followup1/fig04_constructor_momentum_and_lineage.png" alt="Grid band by constructor rolling form heatmap and lineage continuity">
+                </div>
+                <div class="kpi-strip">
+                    <div class="kpi-card kpi-card--red">
+                        <span class="kpi-label">Midfield P8–P13 (27.9%)</span>
+                        <span class="kpi-value kpi-value--red">59.6%</span>
+                        <span class="kpi-sub">vs 83.5% outside midfield for baseline</span>
+                    </div>
+                    <div class="kpi-card kpi-card--teal">
+                        <span class="kpi-label">Q5 Top Team from P16+</span>
+                        <span class="kpi-value kpi-value--teal">66%</span>
+                        <span class="kpi-sub">Top-10 recovery vs 2% for Q1 teams</span>
+                    </div>
+                    <div class="kpi-card kpi-card--amber">
+                        <span class="kpi-label">Q1 Backmarker at P6–10</span>
+                        <span class="kpi-value kpi-value--amber">43%</span>
+                        <span class="kpi-sub">Below 50% despite Top-10 start!</span>
+                    </div>
+                    <div class="kpi-card kpi-card--blue">
+                        <span class="kpi-label">Collinearity Diagnostic</span>
+                        <span class="kpi-value kpi-value--blue">VIF 139.9</span>
+                        <span class="kpi-sub">High within-group VIF → L1/L2 needed</span>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="slide-footer">
+                <span>Diagonal gradient in Panel A previews why a tilted linear hyperplane outperforms a vertical grid cutoff</span>
+                <span>fig04 · Dev Set n = 5,077</span>
+            </footer>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         SLIDE 06 — FEATURE ARCHITECTURE: 3 DISJOINT FACTOR GROUPS
+         ================================================================= -->
+    <section class="slide slide--light" data-sector="2" data-notes="FEATURE ARCHITECTURE (40s): To run a clean 2^3 - 1 = 7-subset ablation, we designed 26 strictly pre-race features partitioned into three disjoint groups. Notice the univariate preview on Dev data: Group A peaks at 0.842 AUC with qualy_pos actually edging out grid_clean because Saturday rank sees through grid penalties; Group B achieves the highest group mean AUC (0.728); Group C trails sharply at 0.577. All sparse historical rates use Empirical Bayes / MAP smoothing tied directly to Lectures 5 and 6.">
+        <header class="telemetry-bar">
+            <div class="sector-track">
+                <span class="sector-pill">S1 Framing</span>
+                <span class="sector-pill active"><span class="sector-dot"></span>S2 Scrub &amp; EDA</span>
+                <span class="sector-pill">S3 Benchmark</span>
+                <span class="sector-pill">S4 Ablation</span>
+                <span class="sector-pill">S5 Appraisal</span>
+            </div>
+            <div class="slide-meta-right"><span>Team 05</span><span class="slide-counter">06 / 14</span></div>
+        </header>
+        <div class="slide-body">
+            <div class="slide-header reveal">
+                <div class="kicker">05 · Feature Engineering Architecture</div>
+                <h2 class="slide-title">26 Pre-Race Features Partitioned Into <span class="title-accent">3 Disjoint Factor Groups</span> for Clean Ablation</h2>
+            </div>
+
+            <div class="kpi-strip kpi-strip--3 reveal" style="flex:1;align-items:stretch;">
+                <div class="panel panel--blue" style="justify-content:space-between;">
+                    <div>
+                        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.35rem;">
+                            <span class="panel-title panel-title--blue">Group A · Qualifying &amp; Grid</span>
+                            <span class="mono-tag">8 features</span>
+                        </div>
+                        <ul class="clean-list clean-list--blue">
+                            <li><span class="mono-tag">grid_clean</span> &amp; <span class="mono-tag">grid_pct</span> (field-size normalized)</li>
+                            <li><span class="mono-tag">is_pit_lane_start</span> (scrubbed <span class="mono-tag">grid == 0</span>)</li>
+                            <li><span class="mono-tag">qualy_pos</span> (Saturday rank, sees through penalties)</li>
+                            <li><span class="mono-tag">grid_penalty_drop</span> = max(0, grid − qualy)</li>
+                            <li><span class="mono-tag">reached_q3</span> shootout indicator</li>
+                            <li><span class="mono-tag">qualy_gap_to_pole_pct</span> (scale-invariant pace)</li>
+                            <li><span class="mono-tag">qualy_delta_teammate_pct</span> (driver vs car)</li>
+                        </ul>
+                    </div>
+                    <div style="border-top:1px solid var(--border-light);padding-top:0.45rem;font-family:var(--font-mono);font-size:var(--small-size);display:flex;justify-content:space-between;">
+                        <span>Max AUC: <strong style="color:var(--telemetry-blue);">0.8419</strong></span>
+                        <span>Max VIF: <strong>139.9</strong></span>
+                    </div>
+                </div>
+
+                <div class="panel panel--amber" style="justify-content:space-between;">
+                    <div>
+                        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.35rem;">
+                            <span class="panel-title" style="color:var(--telemetry-amber);">Group B · Rolling Momentum</span>
+                            <span class="mono-tag">11 features</span>
+                        </div>
+                        <ul class="clean-list">
+                            <li><strong>Constructor (6, race-shifted):</strong> 5-race Top-10 rate, 5-race modern pts/car, 10-race avg finish, 3-vs-10 upgrade momentum, 10-race mech DNF rate, prior season pts/race.</li>
+                            <li><strong>Driver (5, race-shifted):</strong> 5-race Top-10 rate, 5-race avg finish, 5-race positions gained (racecraft), 10-race DNF rate, log prior career starts.</li>
+                            <li>Unified <strong>25–18–…–1</strong> points scale + canonical lineages.</li>
+                        </ul>
+                    </div>
+                    <div style="border-top:1px solid var(--border-light);padding-top:0.45rem;font-family:var(--font-mono);font-size:var(--small-size);display:flex;justify-content:space-between;">
+                        <span>Mean AUC: <strong style="color:var(--telemetry-amber);">0.7277</strong></span>
+                        <span>Max AUC: <strong>0.8346</strong></span>
+                    </div>
+                </div>
+
+                <div class="panel panel--teal" style="justify-content:space-between;">
+                    <div>
+                        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.35rem;">
+                            <span class="panel-title panel-title--teal">Group C · Circuit History</span>
+                            <span class="mono-tag">7 features</span>
+                        </div>
+                        <ul class="clean-list clean-list--teal">
+                            <li><strong>Static Geography (1):</strong> <span class="mono-tag">circuit_alt_log</span> (cooling/turbo altitude stress).</li>
+                            <li><strong>Prior Track Dynamics (3):</strong> Historical Spearman grid-to-finish correlation (overtaking difficulty), prior attrition rate, P1–P10 retention.</li>
+                            <li><strong>Prior Affinity (3, EB-shrunk):</strong> Driver &amp; constructor historical Top-10 rate at this circuit + driver prior circuit starts.</li>
+                        </ul>
+                    </div>
+                    <div style="border-top:1px solid var(--border-light);padding-top:0.45rem;font-family:var(--font-mono);font-size:var(--small-size);display:flex;justify-content:space-between;">
+                        <span>Mean AUC: <strong style="color:var(--telemetry-teal);">0.5765</strong></span>
+                        <span>Max AUC: <strong>0.7044</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel reveal" style="flex-direction:row;align-items:center;justify-content:space-between;padding:clamp(0.45rem,0.9vh,0.7rem) clamp(0.85rem,1.4vw,1.2rem);">
+                <span style="font-size:var(--small-size);"><strong>Empirical Bayes / MAP Smoothing (Lectures 5–6):</strong> Sparse prior rates use <span class="mono-tag">(∑y + m·p₀) / (n + m)</span> with fixed domain priors (<span class="mono-tag">p₀ = 0.50</span>, <span class="mono-tag">m ∈ {2,3,4}</span>) — zero peeking at target statistics.</span>
+                <span class="mono-tag" style="color:var(--telemetry-teal);">Univariate Preview → A &amp; B ≫ C</span>
+            </div>
+
+            <footer class="slide-footer">
+                <span>Non-negative grid_penalty_drop = max(0, grid_clean − qualy_pos) removes exact algebraic rank deficiency</span>
+                <span>26 Features · Zero Overlap</span>
+            </footer>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         SLIDE 07 — MODEL BENCHMARK (FIG 07)
+         ================================================================= -->
+    <section class="slide slide--light" data-sector="3" data-notes="MODEL BENCHMARK (55s): We tuned 9 algorithms spanning the full course syllabus strictly on 5-fold expanding-window CV and evaluated once on held-out 2022–2024. Three headlines jump out: First, every regularized linear, kernel, and ensemble model significantly beats grid<=10 (77.1%). L2 Logistic hits 80.43% (+3.31 pp, McNemar p=0.0012). Second, L1 Logistic wins Temporal CV (0.8401 AUC) and is statistically indistinguishable from Random Forest on Test (McNemar p=1.000), while Linear SVM achieves the best Log-Loss (0.4504) of all 12 models! Third, notice Gaussian Naive Bayes on the right: 80.3% accuracy, yet catastrophic 1.525 Log-Loss — a textbook Lecture 5 demonstration of correlated features breaking conditional independence.">
+        <header class="telemetry-bar">
+            <div class="sector-track">
+                <span class="sector-pill">S1 Framing</span>
+                <span class="sector-pill">S2 Scrub &amp; EDA</span>
+                <span class="sector-pill active"><span class="sector-dot"></span>S3 Benchmark</span>
+                <span class="sector-pill">S4 Ablation</span>
+                <span class="sector-pill">S5 Appraisal</span>
+            </div>
+            <div class="slide-meta-right"><span>Team 05</span><span class="slide-counter">07 / 14</span></div>
+        </header>
+        <div class="slide-body">
+            <div class="slide-header reveal">
+                <div class="kicker">06 · 12-Model Curriculum Benchmark (Held-Out Test 2022–2024, n = 1,359)</div>
+                <h2 class="slide-title">Regularized Linear Models Beat <span class="mono-tag">grid ≤ 10</span> by <span class="title-accent">+3.3 pp</span> and Statistically Tie Random Forest</h2>
+            </div>
+
+            <div class="layout-visual-band reveal">
+                <div class="figure-frame figure-frame--compact">
+                    <img src="figures/followup2/fig07_model_comparison_cv_vs_test.png" alt="Model comparison across accuracy, ROC-AUC, and Log-Loss">
+                </div>
+                <div class="kpi-strip">
+                    <div class="kpi-card kpi-card--blue">
+                        <span class="kpi-label">Logistic (L2, C=0.1)</span>
+                        <span class="kpi-value kpi-value--blue">80.43%</span>
+                        <span class="kpi-sub">+3.31 pp vs baseline · p = 0.0012 · AUC 0.871</span>
+                    </div>
+                    <div class="kpi-card kpi-card--teal">
+                        <span class="kpi-label">L1 Logistic vs Random Forest</span>
+                        <span class="kpi-value kpi-value--teal">p = 1.000</span>
+                        <span class="kpi-sub">CV #1 (0.8401) · ΔAUC = −0.0006 on Test</span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-label">Best Calibration (Linear SVM)</span>
+                        <span class="kpi-value">0.4504</span>
+                        <span class="kpi-sub">Lowest Test Log-Loss &amp; Brier (0.1428)</span>
+                    </div>
+                    <div class="kpi-card kpi-card--red">
+                        <span class="kpi-label">Naive Bayes Trap (L5)</span>
+                        <span class="kpi-value kpi-value--red">1.525 LL</span>
+                        <span class="kpi-sub">&gt;3× worse log-loss from collinearity!</span>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="slide-footer">
+                <span>Nuance: Gradient Boosting edges ahead in raw thresholded Acc (81.16%) without improving ROC-AUC (0.872) or Log-Loss (0.453)</span>
+                <span>fig07 · H2 &amp; H3 Confirmed</span>
+            </footer>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         SLIDE 08 — CLIMAX: 7-SUBSET ABLATION & SHAPLEY (CARBON DARK!)
+         ================================================================= -->
+    <section class="slide slide--dark" data-sector="4" data-notes="THE CLIMAX — 7-SUBSET ABLATION (60s): This is the centerpiece finding that makes our project stand out. We retuned all 7 non-empty subsets of Groups A, B, and C across 5 model families — 35 full temporal pipelines — and computed exact 3-player Shapley attributions. Look at rows A, A+B, and A+B+C: adding Rolling Form (B) onto Qualifying (A) jumps Test ROC-AUC by +0.019 to +0.022 universally across every single model! Now look at the bottom jump from A+B to A+B+C: adding all 7 Circuit History features changes AUC by -0.0002 for L2 Logistic and at most +0.0025 for Random Forest. Why does standalone C still score 0.778? Because historical circuit top-10 rates act as a lagged proxy for persistent team quality when A and B are missing — once current form is observed, circuit affinity is completely subsumed!">
+        <header class="telemetry-bar">
+            <div class="sector-track">
+                <span class="sector-pill">S1 Framing</span>
+                <span class="sector-pill">S2 Scrub &amp; EDA</span>
+                <span class="sector-pill">S3 Benchmark</span>
+                <span class="sector-pill active"><span class="sector-dot"></span>S4 Ablation</span>
+                <span class="sector-pill">S5 Appraisal</span>
+            </div>
+            <div class="slide-meta-right"><span>Team 05</span><span class="slide-counter">08 / 14</span></div>
+        </header>
+        <div class="slide-body">
+            <div class="slide-header reveal">
+                <div class="kicker">07 · Centerpiece 7-Subset Factor Group Ablation (35 Tuned Temporal Pipelines)</div>
+                <h2 class="slide-title">Qualifying + Rolling Form Deliver <span class="title-teal">~100%</span> of Signal — Circuit History Adds <span class="title-accent">≈ 0</span> Marginal Lift</h2>
+            </div>
+
+            <div class="layout-visual-band reveal">
+                <div class="figure-frame figure-frame--compact">
+                    <img src="figures/followup2/fig08_ablation_7subsets_and_shapley.png" alt="7-subset ablation matrix across 5 models and exact Shapley group attribution">
+                </div>
+                <div class="kpi-strip kpi-strip--3">
+                    <div class="kpi-card kpi-card--teal">
+                        <span class="kpi-label">Adding Form: A → A+B</span>
+                        <span class="kpi-value kpi-value--teal">+0.019 to +0.022</span>
+                        <span class="kpi-sub">Universal Test AUC lift across all 5 models (+3.7 pp GB Acc)</span>
+                    </div>
+                    <div class="kpi-card kpi-card--red">
+                        <span class="kpi-label">Adding Track: A+B → A+B+C</span>
+                        <span class="kpi-value kpi-value--red">−0.0002 to +0.0025</span>
+                        <span class="kpi-sub">Negligible marginal gain once current pace &amp; form are known</span>
+                    </div>
+                    <div class="kpi-card kpi-card--amber">
+                        <span class="kpi-label">Why Standalone C = 0.778?</span>
+                        <span class="kpi-value" style="font-size:clamp(0.95rem,1.45vw,1.25rem);color:#FBBF24;">Team-Quality Proxy</span>
+                        <span class="kpi-sub">Top teams scored everywhere; A+B capture 83–86% of Log-Loss Shapley</span>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="slide-footer">
+                <span>Hypothesis H1 Decisively Confirmed Across Linear, Kernel, Bagging, and Boosting Families</span>
+                <span>fig08 · Exact 3-Player Shapley Values</span>
+            </footer>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         SLIDE 09 — WHAT-IF STUDIES: REGULARIZATION & L1 AUTO-PRUNING (FIG 09)
+         ================================================================= -->
+    <section class="slide slide--light" data-sector="4" data-notes="WHAT-IF & L1 PROOF (45s): Want independent confirmation of H1 without manually dropping groups? Look at Panel B of our L1 Lasso sparsity sweep! At CV-optimal C=0.01 — our #1 CV model overall — L1 Lasso automatically zeroes out 16 of 26 features, keeping 4 from Group A, 6 from Group B, and ZERO out of 7 from Group C! We also ran three more what-if checks: a 10-race rolling window slightly beats a noisy 3-race window (0.8751 AUC), canonical team lineages improve rebranded team calibration, and CV-tuned threshold t=0.455 lifts L1 accuracy to 80.35%.">
+        <header class="telemetry-bar">
+            <div class="sector-track">
+                <span class="sector-pill">S1 Framing</span>
+                <span class="sector-pill">S2 Scrub &amp; EDA</span>
+                <span class="sector-pill">S3 Benchmark</span>
+                <span class="sector-pill active"><span class="sector-dot"></span>S4 Ablation</span>
+                <span class="sector-pill">S5 Appraisal</span>
+            </div>
+            <div class="slide-meta-right"><span>Team 05</span><span class="slide-counter">09 / 14</span></div>
+        </header>
+        <div class="slide-body">
+            <div class="slide-header reveal">
+                <div class="kicker">08 · “What-If” Studies: Regularization, L1 Sparsity &amp; Sensitivity</div>
+                <h2 class="slide-title">CV-Optimal L1 Lasso Automatically Eliminates <span class="title-accent">7 / 7</span> Circuit Features While Holding <span class="title-teal">0.873 AUC</span></h2>
+            </div>
+
+            <div class="layout-visual-band reveal">
+                <div class="figure-frame figure-frame--compact">
+                    <img src="figures/followup2/fig09_regularization_and_bias_variance.png" alt="L2 bias-variance curve and L1 sparsity path">
+                </div>
+                <div class="layout-split layout-split--wide-left" style="flex:0 0 auto;">
+                    <div class="panel panel--blue">
+                        <div class="panel-title panel-title--blue">Surviving Features at L1 Optimal C = 0.01 (10 / 26 Active)</div>
+                        <div class="pill-grid">
+                            <span class="feat-pill feat-pill--a">A: qualy_pos</span>
+                            <span class="feat-pill feat-pill--a">A: grid_pct</span>
+                            <span class="feat-pill feat-pill--a">A: grid_clean</span>
+                            <span class="feat-pill feat-pill--a">A: qualy_gap%</span>
+                            <span class="feat-pill feat-pill--b">B: const_roll10_pos</span>
+                            <span class="feat-pill feat-pill--b">B: const_roll5_t10</span>
+                            <span class="feat-pill feat-pill--b">B: drv_roll5_t10</span>
+                            <span class="feat-pill feat-pill--b">B: drv_roll5_pos</span>
+                            <span class="feat-pill feat-pill--b">B: drv_pos_gained</span>
+                            <span class="feat-pill feat-pill--b">B: career_starts</span>
+                            <span class="feat-pill feat-pill--zero">C: All 7 Circuit Features Zeroed (0/7)</span>
+                        </div>
+                    </div>
+                    <div class="panel panel--teal">
+                        <div class="panel-title panel-title--teal">Three Additional “What-If” Checks</div>
+                        <ul class="clean-list clean-list--teal" style="gap:0.25rem;">
+                            <li><strong>Horizon:</strong> <span class="mono-tag">W=10</span> (AUC <strong>0.8751</strong>) beats <span class="mono-tag">W=3</span> (0.8702) by filtering DNF noise.</li>
+                            <li><strong>Lineages:</strong> Rebrand test Log-Loss <span class="mono-tag">0.5152 → 0.5132</span>.</li>
+                            <li><strong>CV Threshold:</strong> <span class="mono-tag">t=0.455</span> lifts L1 Acc <span class="mono-tag">79.8% → 80.4%</span>, F1 <span class="mono-tag">0.810</span>.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="slide-footer">
+                <span>Lecture 4 Bias-Variance &amp; Sparsity Theory Validated Empirically on Temporal Holdout</span>
+                <span>fig09 · Independent Proof of H1</span>
+            </footer>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         SLIDE 10 — CALIBRATION & 2D GEOMETRY (FIG 11)
+         ================================================================= -->
+    <section class="slide slide--light" data-sector="5" data-notes="GEOMETRY & CALIBRATION (45s): Why do linear models perform so cleanly here? Panel C gives the entire geometric story in one picture: the dashed orange line is the grid<=10 rule; the solid black line is our tilted linear decision boundary in Grid vs Constructor Form space. Notice the two triangle regions where it overturns the baseline — top right, where fast Red Bull/Ferrari cars start P11–P16 and still recover, and bottom left, where backmarkers qualify P8–P10 and drop out. Panel B also proves why probability calibration matters: Logistic, RF, and GB hug the perfect diagonal, while Naive Bayes displays classic S-curve overconfidence.">
+        <header class="telemetry-bar">
+            <div class="sector-track">
+                <span class="sector-pill">S1 Framing</span>
+                <span class="sector-pill">S2 Scrub &amp; EDA</span>
+                <span class="sector-pill">S3 Benchmark</span>
+                <span class="sector-pill">S4 Ablation</span>
+                <span class="sector-pill active"><span class="sector-dot"></span>S5 Appraisal</span>
+            </div>
+            <div class="slide-meta-right"><span>Team 05</span><span class="slide-counter">10 / 14</span></div>
+        </header>
+        <div class="slide-body">
+            <div class="slide-header reveal">
+                <div class="kicker">09 · Probability Calibration &amp; Geometric Interpretability</div>
+                <h2 class="slide-title">A Single <span class="title-teal">Tilted Linear Hyperplane</span> Explains Why Simple Models Rival Black-Box Ensembles</h2>
+            </div>
+
+            <div class="layout-visual-band reveal">
+                <div class="figure-frame figure-frame--compact">
+                    <img src="figures/followup2/fig11_roc_pr_calibration_and_boundary.png" alt="ROC curves, reliability calibration curves, and 2D linear decision boundary">
+                </div>
+                <div class="kpi-strip kpi-strip--3">
+                    <div class="kpi-card kpi-card--blue">
+                        <span class="kpi-label">Panel A · ROC Dominance</span>
+                        <span class="kpi-value" style="font-size:clamp(0.95rem,1.4vw,1.2rem);">Strictly Above Rule Star</span>
+                        <span class="kpi-sub">All multi-group models dominate grid ≤ 10 (TPR 0.77, FPR 0.23) across all thresholds</span>
+                    </div>
+                    <div class="kpi-card kpi-card--red">
+                        <span class="kpi-label">Panel B · Calibration Audit</span>
+                        <span class="kpi-value" style="font-size:clamp(0.95rem,1.4vw,1.2rem);">Brier 0.144 vs 0.181</span>
+                        <span class="kpi-sub">Logistic/RF/GB track diagonal; Gaussian NB collapses into S-shaped overconfidence</span>
+                    </div>
+                    <div class="kpi-card kpi-card--teal">
+                        <span class="kpi-label">Panel C · Decision Geometry</span>
+                        <span class="kpi-value" style="font-size:clamp(0.95rem,1.4vw,1.2rem);">Two Overturn Wedges</span>
+                        <span class="kpi-sub">Promotes fast cars starting P11–P16; demotes weak cars qualifying P8–P10</span>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="slide-footer">
+                <span>Smooth, near-linear trade-off between starting slot and car pace leaves minimal non-linear residual for complex trees</span>
+                <span>fig11 · 2022–2024 Test Set</span>
+            </footer>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         SLIDE 11 — ICONIC REAL RACES & HARD-SLICE VICTORIES
+         ================================================================= -->
+    <section class="slide slide--light slide--teal-accent" data-sector="5" data-notes="ICONIC RACE PROOF (45s): Let's bring the statistics down to actual Sunday Grands Prix in 2022–2024. Across 1,359 test starts, L2 Logistic overturns grid<=10 correctly 116 times versus 71 losses — a +45 net race gain. On drivers hit by a 3+ place grid penalty, grid<=10 collapses to 55.4%, whereas L2 Logistic hits 79.5% — a +24.1 percentage-point leap! Look at the timing tower: Verstappen taking an engine penalty at Spa 2024 (P11) and Spa 2022 (P14) — our model gave him 87% and 82% Top-10 probability and nailed both; and on the flip side, it saw right through Nicholas Latifi promoted to P10 at Monza 2022 (13.5% probability → finished P15).">
+        <header class="telemetry-bar">
+            <div class="sector-track">
+                <span class="sector-pill">S1 Framing</span>
+                <span class="sector-pill">S2 Scrub &amp; EDA</span>
+                <span class="sector-pill">S3 Benchmark</span>
+                <span class="sector-pill">S4 Ablation</span>
+                <span class="sector-pill active"><span class="sector-dot"></span>S5 Appraisal</span>
+            </div>
+            <div class="slide-meta-right"><span>Team 05</span><span class="slide-counter">11 / 14</span></div>
+        </header>
+        <div class="slide-body">
+            <div class="slide-header reveal">
+                <div class="kicker">10 · Hard-Slice Triumphs &amp; Real Grand Prix Proof (2022–2024)</div>
+                <h2 class="slide-title"><span class="title-teal">+24.1 pp</span> on Grid Penalties &amp; <span class="title-teal">+6.9 pp</span> in Midfield — Exact Races Where ML Overturned <span class="mono-tag">grid ≤ 10</span></h2>
+            </div>
+
+            <div class="layout-visual-band reveal" style="justify-content:center;gap:clamp(0.7rem,1.6vh,1.25rem);">
+                <div class="kpi-strip">
+                    <div class="kpi-card kpi-card--teal">
+                        <span class="kpi-label">Grid Penalty Drops (n=83)</span>
+                        <span class="kpi-value kpi-value--teal">55.4% → 79.5%</span>
+                        <span class="kpi-sub"><strong>+24.1 pp</strong> · Test ROC-AUC 0.873</span>
+                    </div>
+                    <div class="kpi-card kpi-card--blue">
+                        <span class="kpi-label">Midfield P8–P13 (n=405)</span>
+                        <span class="kpi-value kpi-value--blue">61.2% → 68.1%</span>
+                        <span class="kpi-sub"><strong>+6.9 pp</strong> in hardest zone of grid</span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-label">2022 &amp; 2023 Seasons</span>
+                        <span class="kpi-value">+5.0 / +5.7 pp</span>
+                        <span class="kpi-sub">78.2% &amp; 79.5% vs 73.2% &amp; 73.9% rule</span>
+                    </div>
+                    <div class="kpi-card kpi-card--amber">
+                        <span class="kpi-label">McNemar Overturns</span>
+                        <span class="kpi-value kpi-value--amber">116 vs 71</span>
+                        <span class="kpi-sub"><strong>+45 net races won</strong> (p = 0.0012)</span>
+                    </div>
+                </div>
+
+                <table class="timing-table">
+                    <thead>
+                        <tr>
+                            <th>Verdict</th>
+                            <th>Grand Prix</th>
+                            <th>Driver (Constructor)</th>
+                            <th>Grid / Qualy</th>
+                            <th>Finish</th>
+                            <th>L2 Prob</th>
+                            <th>grid ≤ 10</th>
+                            <th>Why ML Got It Right</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge badge--win">Overturn Win</span></td>
+                            <td><strong>2024 Belgian GP</strong></td>
+                            <td>M. Verstappen (Red Bull)</td>
+                            <td style="font-family:var(--font-mono);">P11 / Q1</td>
+                            <td style="font-family:var(--font-mono);font-weight:700;color:var(--telemetry-teal);">P4</td>
+                            <td style="font-family:var(--font-mono);font-weight:700;">86.9%</td>
+                            <td style="color:var(--f1-red);font-weight:700;">Wrong</td>
+                            <td>10-place engine penalty; Q1 pace + Red Bull form</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge--win">Overturn Win</span></td>
+                            <td><strong>2022 Belgian GP</strong></td>
+                            <td>M. Verstappen (Red Bull)</td>
+                            <td style="font-family:var(--font-mono);">P14 / Q1</td>
+                            <td style="font-family:var(--font-mono);font-weight:700;color:var(--telemetry-teal);">P1 (Win)</td>
+                            <td style="font-family:var(--font-mono);font-weight:700;">82.1%</td>
+                            <td style="color:var(--f1-red);font-weight:700;">Wrong</td>
+                            <td>Engine penalty drop; dominant 13.9 pts/car form</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge--win">Overturn Win</span></td>
+                            <td><strong>2022 United States GP</strong></td>
+                            <td>C. Leclerc (Ferrari)</td>
+                            <td style="font-family:var(--font-mono);">P12 / Q2</td>
+                            <td style="font-family:var(--font-mono);font-weight:700;color:var(--telemetry-teal);">P3</td>
+                            <td style="font-family:var(--font-mono);font-weight:700;">81.8%</td>
+                            <td style="color:var(--f1-red);font-weight:700;">Wrong</td>
+                            <td>Engine penalty drop; Q2 pace + 12.0 pts/car form</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge--win">Overturn Win</span></td>
+                            <td><strong>2024 Emilia Romagna GP</strong></td>
+                            <td>S. Pérez (Red Bull)</td>
+                            <td style="font-family:var(--font-mono);">P11 / Q11</td>
+                            <td style="font-family:var(--font-mono);font-weight:700;color:var(--telemetry-teal);">P8</td>
+                            <td style="font-family:var(--font-mono);font-weight:700;">80.4%</td>
+                            <td style="color:var(--f1-red);font-weight:700;">Wrong</td>
+                            <td>Missed Q3, but 16.6 pts/car team pace recovers</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge--win">Overturn Win</span></td>
+                            <td><strong>2022 Italian GP</strong></td>
+                            <td>N. Latifi (Williams)</td>
+                            <td style="font-family:var(--font-mono);">P10 / Q16</td>
+                            <td style="font-family:var(--font-mono);font-weight:700;color:var(--ink-secondary);">P15</td>
+                            <td style="font-family:var(--font-mono);font-weight:700;">13.5%</td>
+                            <td style="color:var(--f1-red);font-weight:700;">Wrong</td>
+                            <td>Artificially promoted to P10 by others' penalties</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge--win">Overturn Win</span></td>
+                            <td><strong>2023 Dutch GP</strong></td>
+                            <td>L. Sargeant (Williams)</td>
+                            <td style="font-family:var(--font-mono);">P10 / Q10</td>
+                            <td style="font-family:var(--font-mono);font-weight:700;color:var(--ink-secondary);">P20</td>
+                            <td style="font-family:var(--font-mono);font-weight:700;">15.8%</td>
+                            <td style="color:var(--f1-red);font-weight:700;">Wrong</td>
+                            <td>Wet Q3 fluke; weak rolling team &amp; rookie form</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="panel panel--teal" style="flex-direction:row;align-items:center;justify-content:space-between;padding:clamp(0.45rem,0.9vh,0.7rem) clamp(0.85rem,1.4vw,1.2rem);">
+                    <span style="font-size:var(--small-size);"><strong>Symmetric Mechanism:</strong> L2 Logistic wins in <em>both</em> directions — upgrading fast cars penalized out of P1–P10 and downgrading backmarkers fluking into P8–P10.</span>
+                    <span class="mono-tag" style="color:var(--telemetry-teal);">95% CI: [+1.47, +5.37] pp</span>
+                </div>
+            </div>
+
+            <footer class="slide-footer">
+                <span>All probabilities computed strictly before Sunday lights out — zero in-race telemetry</span>
+                <span>Held-Out 2022–2024 Case Studies</span>
+            </footer>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         SLIDE 12 — DARK CRITICAL APPRAISAL: IRREDUCIBLE BAYES NOISE FLOOR (FIG 12)
+         ================================================================= -->
+    <section class="slide slide--dark" data-sector="5" data-notes="CRITICAL APPRAISAL & HONEST LIMITS (55s): Equally important to showing where we win is understanding WHY we still miss ~19.6% of predictions. We ran a post-hoc decomposition of all 117 False Positives (strictly after prediction!). A stunning 60.7% — 71 out of 117 — were unpredictable in-race retirements: 30 crashes, 36 mechanical DNFs, and 5 DNS/DSQ! For example, Verstappen's brake fire from Pole in Australia 2024, or Leclerc's turbo and power-unit failures from Pole in Spain and Baku 2022. Only 46 out of 1,359 starts (3.4%) were genuine classified pace misses! We also note honestly that in 2024, record-low 11.3% DNF rates lifted grid<=10 to 83.7%, where L2 matched closely at 83.3% with a huge 0.910 ROC-AUC.">
+        <header class="telemetry-bar">
+            <div class="sector-track">
+                <span class="sector-pill">S1 Framing</span>
+                <span class="sector-pill">S2 Scrub &amp; EDA</span>
+                <span class="sector-pill">S3 Benchmark</span>
+                <span class="sector-pill">S4 Ablation</span>
+                <span class="sector-pill active"><span class="sector-dot"></span>S5 Appraisal</span>
+            </div>
+            <div class="slide-meta-right"><span>Team 05</span><span class="slide-counter">12 / 14</span></div>
+        </header>
+        <div class="slide-body">
+            <div class="slide-header reveal">
+                <div class="kicker">11 · Critical Error Appraisal &amp; Irreducible Bayes Floor</div>
+                <h2 class="slide-title"><span class="title-accent">60.7%</span> of False Positives Are Unpredictable DNFs — Only <span class="title-teal">3.4%</span> Are Classified Pace Misses</h2>
+            </div>
+
+            <div class="layout-visual-band reveal">
+                <div class="figure-frame figure-frame--compact">
+                    <img src="figures/followup2/fig12_error_analysis_and_regime_robustness.png" alt="Confusion matrix, False Positive DNF decomposition, and slice robustness">
+                </div>
+                <div class="kpi-strip">
+                    <div class="kpi-card kpi-card--red">
+                        <span class="kpi-label">Irreducible FP DNFs</span>
+                        <span class="kpi-value kpi-value--red">71 / 117</span>
+                        <span class="kpi-sub">30 Crash · 36 Mech · 5 DNS/DSQ</span>
+                    </div>
+                    <div class="kpi-card kpi-card--teal">
+                        <span class="kpi-label">True Classified FP Rate</span>
+                        <span class="kpi-value kpi-value--teal">3.4%</span>
+                        <span class="kpi-sub">Only 46 / 1,359 starts finished P11+</span>
+                    </div>
+                    <div class="kpi-card kpi-card--amber">
+                        <span class="kpi-label">Pole-Sitter DNF Misses</span>
+                        <span class="kpi-value" style="font-size:clamp(0.88rem,1.25vw,1.08rem);color:#FBBF24;">VER·LEC·SAI</span>
+                        <span class="kpi-sub">AUS '24 brakes, BAKU '22 PU, COTA '22 T1</span>
+                    </div>
+                    <div class="kpi-card kpi-card--blue">
+                        <span class="kpi-label">2024 Honest Nuance</span>
+                        <span class="kpi-value kpi-value--blue">0.910 AUC</span>
+                        <span class="kpi-sub">11.3% low DNF → rule 83.7% vs L2 83.3%</span>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="slide-footer">
+                <span>46.3% (69/149) of False Negatives occurred in high-attrition races with ≥ 2 Top-10 starters retiring</span>
+                <span>fig12 · Post-Hoc Error Decomposition</span>
+            </footer>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         SLIDE 13 — CONCLUSIONS, LIMITATIONS & FUTURE WORK (DARK CLOSING)
+         ================================================================= -->
+    <section class="slide slide--dark slide--teal-accent" data-sector="5" data-notes="CLOSING (35s): To wrap up: all three hypotheses were rigorously confirmed under zero-leakage temporal validation. Qualifying plus rolling momentum explain virtually 100% of predictable pre-race Top-10 variance while Circuit History adds essentially zero; regularized linear models match tree ensembles in ranking and lead in calibration; and post-hoc decomposition pins down an honest ~12–15% Bayes noise floor driven by race-day DNFs. To push further without leaking, the clearest next step is incorporating strictly pre-race Friday FP2 long-run telemetry from FastF1, rain forecasts, and FIA tyre nominations. Thank you — we welcome your questions!">
+        <header class="telemetry-bar">
+            <div class="sector-track">
+                <span class="sector-pill">S1 Framing</span>
+                <span class="sector-pill">S2 Scrub &amp; EDA</span>
+                <span class="sector-pill">S3 Benchmark</span>
+                <span class="sector-pill">S4 Ablation</span>
+                <span class="sector-pill active"><span class="sector-dot"></span>S5 Appraisal</span>
+            </div>
+            <div class="slide-meta-right"><span>Team 05</span><span class="slide-counter">13 / 14</span></div>
+        </header>
+        <div class="slide-body">
+            <div class="slide-header reveal">
+                <div class="kicker">12 · Final Synthesis &amp; Scientific Takeaway</div>
+                <h2 class="slide-title">Three Hypotheses Confirmed, One Honest Noise Ceiling, Three Pre-Race Next Steps</h2>
+            </div>
+
+            <div class="layout-split layout-split--even reveal" style="align-items:center;">
+                <div class="panel panel--teal" style="padding:clamp(0.95rem,2vh,1.45rem) clamp(1rem,1.7vw,1.4rem);gap:clamp(0.65rem,1.4vh,1.05rem);">
+                    <div class="panel-title panel-title--teal">Final Verdict Across All Hypotheses</div>
+                    <ul class="clean-list clean-list--teal" style="gap:clamp(0.6rem,1.35vh,1rem);">
+                        <li><span class="badge badge--win">H1 Confirmed</span> <strong>Qualifying (A) + Rolling Form (B)</strong> deliver ~100% of predictable pre-race signal (~0.871 AUC). Adding <strong>Circuit History (C)</strong> shifts AUC by ≤ 0.0025 and is pruned <strong>7 / 7</strong> by CV-optimal L1 Lasso.</li>
+                        <li><span class="badge badge--win">H2 Confirmed</span> <strong>Regularized Linear Models</strong> win Temporal CV (L1: 0.8401 AUC), statistically tie Random Forest on Test (McNemar <strong>p = 1.000</strong>), and lead probability calibration (Linear SVM Log-Loss <strong>0.4504</strong>).</li>
+                        <li><span class="badge badge--win">H3 Confirmed</span> <strong>L2 Logistic</strong> lifts 2022–2024 accuracy by <strong>+3.31 pp</strong> (p = 0.0012), <strong>+6.9 pp</strong> in P8–P13 Midfield, and <strong>+24.1 pp</strong> on Grid Penalty Drops.</li>
+                    </ul>
+                    <div style="font-family:var(--font-mono);font-size:var(--micro-size);color:#94A3B8;border-top:1px solid var(--border-dark);padding-top:0.55rem;">
+                        100% Reproducible: <span style="color:#E2E8F0;">python run_all.py --stage all</span> · 2 Executed Notebooks · 5-Page Report
+                    </div>
+                </div>
+
+                <div class="stack" style="gap:clamp(0.75rem,1.6vh,1.25rem);">
+                    <div class="panel panel--red" style="padding:clamp(0.85rem,1.7vh,1.25rem) clamp(1rem,1.6vw,1.35rem);">
+                        <div class="panel-title panel-title--red">Honest Limitations &amp; Next Pre-Race Signals</div>
+                        <ul class="clean-list" style="gap:clamp(0.45rem,1vh,0.75rem);">
+                            <li><strong>Irreducible ~12–15% Bayes Ceiling:</strong> Crashes and mechanical DNFs cap strictly pre-race tabular accuracy near 81–84%.</li>
+                            <li><strong>Friday FP2 Long-Run Telemetry (FastF1):</strong> Captures race-trim tyre degradation unseen in single-lap qualifying.</li>
+                            <li><strong>Pre-Race Weather &amp; FIA Tyre Nominations:</strong> Rain probability &amp; C1–C5 compounds sharpen strategy variance without leakage.</li>
+                        </ul>
+                    </div>
+
+                    <div style="background:linear-gradient(135deg,#141822 0%,#1E2538 100%);border:1px solid rgba(225,6,0,0.45);border-radius:8px;padding:clamp(0.85rem,1.9vh,1.35rem);text-align:center;">
+                        <div style="font-family:var(--font-heavy);font-size:clamp(1.5rem,2.8vw,2.3rem);color:#FFFFFF;letter-spacing:0.02em;">THANK YOU · QUESTIONS?</div>
+                        <div style="font-family:var(--font-mono);font-size:var(--small-size);color:#94A3B8;margin-top:0.3rem;">Team 05: Marc Font · David Redrejo · Elias Barreiro &nbsp;|&nbsp; Slide 14: Q&amp;A Appendix →</div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="slide-footer">
+                <span>Fundamentals of Machine Learning (UAB, 2026–27) — Final Project Defense</span>
+                <span>Press → for Q&amp;A Technical Appendix</span>
+            </footer>
+        </div>
+    </section>
+
+    <!-- =================================================================
+         SLIDE 14 — BONUS Q&A TECHNICAL DEFENSE APPENDIX (FIG 10)
+         ================================================================= -->
+    <section class="slide slide--light" data-sector="5" data-notes="Q&A BACKUP SLIDE: Keep this in reserve for instructor questions! If asked why const_roll5_pts_per_car has a negative partial coefficient (-0.62) in L2 Logistic despite positive univariate correlation (+0.58), point right to Panel A: it's a classic multicollinearity suppressor contrast because F1 points (25-18-15...) are heavily podium-skewed compared to average finish position; L1 Lasso cleanly removes the collinear duplicate! Panel B also confirms Linear and Random Forest agree on out-of-sample permutation importance — and Group C drops are near zero.">
+        <header class="telemetry-bar">
+            <div class="sector-track">
+                <span class="sector-pill">S1 Framing</span>
+                <span class="sector-pill">S2 Scrub &amp; EDA</span>
+                <span class="sector-pill">S3 Benchmark</span>
+                <span class="sector-pill">S4 Ablation</span>
+                <span class="sector-pill active"><span class="sector-dot"></span>Q&amp;A Appendix</span>
+            </div>
+            <div class="slide-meta-right"><span>Backup Slide</span><span class="slide-counter">14 / 14</span></div>
+        </header>
+        <div class="slide-body">
+            <div class="slide-header reveal">
+                <div class="kicker">Appendix · Instructor Q&amp;A Technical Defense</div>
+                <h2 class="slide-title">Standardized Weights, Out-of-Sample Permutation Importance &amp; Multicollinearity Suppressor Effect</h2>
+            </div>
+
+            <div class="layout-visual-band reveal">
+                <div class="figure-frame figure-frame--compact">
+                    <img src="figures/followup2/fig10_interpretability_weights_and_permutation.png" alt="Standardized L2 Logistic weights and out-of-sample permutation importance">
+                </div>
+                <div class="kpi-strip kpi-strip--3">
+                    <div class="kpi-card kpi-card--blue">
+                        <span class="kpi-label">Cross-Family Agreement</span>
+                        <span class="kpi-value" style="font-size:clamp(0.9rem,1.3vw,1.12rem);">Linear ≡ Random Forest</span>
+                        <span class="kpi-sub">Both rank constructor/driver avg finish, qualy_pos &amp; grid_pct highest; Group C ≈ 0</span>
+                    </div>
+                    <div class="kpi-card kpi-card--amber">
+                        <span class="kpi-label">Why β(pts/car) = −0.62 in L2?</span>
+                        <span class="kpi-value" style="font-size:clamp(0.9rem,1.3vw,1.12rem);">Collinearity Suppressor</span>
+                        <span class="kpi-sub">25-18-15 podium skew contrasts with avg finish (VIF 19.6); L1 zeroes duplicate cleanly</span>
+                    </div>
+                    <div class="kpi-card kpi-card--teal">
+                        <span class="kpi-label">Paired Bootstrap 95% CIs</span>
+                        <span class="kpi-value" style="font-size:clamp(0.9rem,1.3vw,1.12rem);">2,000 Resamples</span>
+                        <span class="kpi-sub">L2 vs grid≤10: [+1.47, +5.37] pp · vs Grid-LR: [+0.026, +0.053] AUC</span>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="slide-footer">
+                <span>Standardized L2 weights computed with 200 bootstrap resamples; Permutation importance over 30 repeats on 2022–2024 Test</span>
+                <span>fig10 · Technical Appendix</span>
+            </footer>
+        </div>
+    </section>
+
+    <script>
+        /* ===========================================
+           SLIDE PRESENTATION CONTROLLER
+           Handles keyboard, wheel, touch swipe, IntersectionObserver
+           animations, progress bar, nav dots, speaker notes (N),
+           fullscreen (F), and opt-in inline editing (E).
+           =========================================== */
+        class SlidePresentation {
+            constructor() {
+                this.slides = Array.from(document.querySelectorAll('.slide'));
+                this.progressBar = document.getElementById('progressBar');
+                this.navDotsEl = document.getElementById('navDots');
+                this.notesDrawer = document.getElementById('notesDrawer');
+                this.notesText = document.getElementById('notesText');
+                this.notesSlideLabel = document.getElementById('notesSlideLabel');
+                this.currentSlide = 0;
+                this.wheelLocked = false;
+                this.touchStartY = 0;
+                this.isEditing = false;
+
+                this.buildNavDots();
+                this.setupIntersectionObserver();
+                this.setupKeyboardNav();
+                this.setupWheelNav();
+                this.setupTouchNav();
+                this.setupNotesDrawer();
+                this.setupInlineEditor();
+                this.updateChrome(0);
+            }
+
+            buildNavDots() {
+                this.dots = this.slides.map((_, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'nav-dot' + (idx === 0 ? ' active' : '');
+                    btn.setAttribute('aria-label', `Go to slide ${idx + 1}`);
+                    btn.addEventListener('click', () => this.goTo(idx));
+                    this.navDotsEl.appendChild(btn);
+                    return btn;
+                });
+            }
+
+            setupIntersectionObserver() {
+                const obs = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                            const idx = this.slides.indexOf(entry.target);
+                            if (idx !== -1) {
+                                this.currentSlide = idx;
+                                this.updateChrome(idx);
+                            }
+                        }
+                    });
+                }, { threshold: 0.55 });
+                this.slides.forEach((slide) => obs.observe(slide));
+            }
+
+            goTo(index) {
+                const target = Math.max(0, Math.min(this.slides.length - 1, index));
+                this.currentSlide = target;
+                this.slides[target].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                this.updateChrome(target);
+            }
+
+            updateChrome(idx) {
+                const pct = ((idx + 1) / this.slides.length) * 100;
+                this.progressBar.style.width = `${pct}%`;
+                this.dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+                const note = this.slides[idx].dataset.notes || 'No speaker notes for this slide.';
+                this.notesSlideLabel.textContent = `Speaker Notes — Slide ${idx + 1} / ${this.slides.length}`;
+                this.notesText.textContent = note;
+            }
+
+            setupKeyboardNav() {
+                document.addEventListener('keydown', (e) => {
+                    if (e.target.getAttribute('contenteditable') === 'true') {
+                        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+                            e.preventDefault();
+                            this.exportHtml();
+                        }
+                        return;
+                    }
+                    if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key)) {
+                        e.preventDefault();
+                        this.goTo(this.currentSlide + 1);
+                    } else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) {
+                        e.preventDefault();
+                        this.goTo(this.currentSlide - 1);
+                    } else if (e.key === 'Home') {
+                        e.preventDefault();
+                        this.goTo(0);
+                    } else if (e.key === 'End') {
+                        e.preventDefault();
+                        this.goTo(this.slides.length - 1);
+                    } else if (e.key.toLowerCase() === 'n') {
+                        this.notesDrawer.classList.toggle('open');
+                    } else if (e.key.toLowerCase() === 'f') {
+                        if (!document.fullscreenElement) {
+                            document.documentElement.requestFullscreen?.();
+                        } else {
+                            document.exitFullscreen?.();
+                        }
+                    } else if (e.key.toLowerCase() === 'e') {
+                        this.toggleEditMode();
+                    }
+                });
+            }
+
+            setupWheelNav() {
+                window.addEventListener('wheel', (e) => {
+                    if (this.wheelLocked || Math.abs(e.deltaY) < 25) return;
+                    this.wheelLocked = true;
+                    this.goTo(this.currentSlide + (e.deltaY > 0 ? 1 : -1));
+                    setTimeout(() => { this.wheelLocked = false; }, 450);
+                }, { passive: true });
+            }
+
+            setupTouchNav() {
+                window.addEventListener('touchstart', (e) => {
+                    this.touchStartY = e.touches[0].clientY;
+                }, { passive: true });
+                window.addEventListener('touchend', (e) => {
+                    const dy = this.touchStartY - e.changedTouches[0].clientY;
+                    if (Math.abs(dy) > 45) {
+                        this.goTo(this.currentSlide + (dy > 0 ? 1 : -1));
+                    }
+                }, { passive: true });
+            }
+
+            setupNotesDrawer() {
+                document.getElementById('notesClose').addEventListener('click', () => {
+                    this.notesDrawer.classList.remove('open');
+                });
+            }
+
+            /* JS-based hover with 400ms grace period (per html-template.md) */
+            setupInlineEditor() {
+                const hotzone = document.getElementById('editHotzone');
+                const toolbar = document.getElementById('editToolbar');
+                const toggleBtn = document.getElementById('editToggle');
+                const saveBtn = document.getElementById('saveHtmlBtn');
+                let hideTimeout = null;
+
+                const show = () => { clearTimeout(hideTimeout); toolbar.classList.add('show'); };
+                const scheduleHide = () => {
+                    hideTimeout = setTimeout(() => {
+                        if (!this.isEditing) toolbar.classList.remove('show');
+                    }, 400);
+                };
+
+                hotzone.addEventListener('mouseenter', show);
+                hotzone.addEventListener('mouseleave', scheduleHide);
+                hotzone.addEventListener('click', () => this.toggleEditMode());
+                toolbar.addEventListener('mouseenter', show);
+                toolbar.addEventListener('mouseleave', scheduleHide);
+                toggleBtn.addEventListener('click', () => this.toggleEditMode());
+                saveBtn.addEventListener('click', () => this.exportHtml());
+
+                this.restoreEdits();
+            }
+
+            toggleEditMode() {
+                this.isEditing = !this.isEditing;
+                const toolbar = document.getElementById('editToolbar');
+                const toggleBtn = document.getElementById('editToggle');
+                const saveBtn = document.getElementById('saveHtmlBtn');
+                toolbar.classList.toggle('active', this.isEditing);
+                toggleBtn.classList.toggle('active', this.isEditing);
+                toggleBtn.textContent = this.isEditing ? 'Done (E)' : 'Edit (E)';
+                saveBtn.style.display = this.isEditing ? 'inline-block' : 'none';
+
+                const editableNodes = document.querySelectorAll('h1, h2, .panel-title, .kpi-value, .kpi-sub, li, p, td');
+                editableNodes.forEach((el, i) => {
+                    el.setAttribute('contenteditable', this.isEditing ? 'true' : 'false');
+                    el.dataset.editKey = `f1_slide_edit_${i}`;
+                    if (this.isEditing) {
+                        el.addEventListener('input', () => {
+                            localStorage.setItem(el.dataset.editKey, el.innerHTML);
+                        });
+                    }
+                });
+            }
+
+            restoreEdits() {
+                const editableNodes = document.querySelectorAll('h1, h2, .panel-title, .kpi-value, .kpi-sub, li, p, td');
+                editableNodes.forEach((el, i) => {
+                    const saved = localStorage.getItem(`f1_slide_edit_${i}`);
+                    if (saved !== null) el.innerHTML = saved;
+                });
+            }
+
+            exportHtml() {
+                if (this.isEditing) this.toggleEditMode();
+                const blob = new Blob(['<!DOCTYPE html>\n' + document.documentElement.outerHTML], { type: 'text/html' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'final_presentation_edited.html';
+                a.click();
+            }
+        }
+
+        new SlidePresentation();
+    </script>
+</body>
+</html>

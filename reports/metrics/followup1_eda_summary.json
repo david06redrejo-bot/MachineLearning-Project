@@ -1,0 +1,91 @@
+{
+  "train_dev_rows": 5077,
+  "test_rows": 1359,
+  "cv_val_seasons": [
+    2017,
+    2018,
+    2019,
+    2020,
+    2021
+  ],
+  "group_univariate_summary": [
+    {
+      "group": "A_qualifying",
+      "n_features": 8,
+      "mean_auc": 0.7088078804911162,
+      "max_auc": 0.841901602190913,
+      "mean_mi": 0.11802601510047916,
+      "max_mi": 0.2002927136638335,
+      "max_vif": 139.93911699626796
+    },
+    {
+      "group": "B_form",
+      "n_features": 11,
+      "mean_auc": 0.727737624641339,
+      "max_auc": 0.8346088200773428,
+      "mean_mi": 0.12818003509293163,
+      "max_mi": 0.1990043731115716,
+      "max_vif": 22.183543695218386
+    },
+    {
+      "group": "C_track",
+      "n_features": 7,
+      "mean_auc": 0.5764982755176954,
+      "max_auc": 0.7044214951391842,
+      "mean_mi": 0.02884031313392429,
+      "max_mi": 0.08463217976805004,
+      "max_vif": 8.357493572861319
+    }
+  ],
+  "top_5_features_by_auc": [
+    {
+      "feature": "qualy_pos",
+      "group": "A_qualifying",
+      "univariate_auc": 0.841901602190913,
+      "mutual_info_nats": 0.19834541905295344,
+      "spearman_r": -0.5914915730661184
+    },
+    {
+      "feature": "grid_clean",
+      "group": "A_qualifying",
+      "univariate_auc": 0.8361916051368619,
+      "mutual_info_nats": 0.2002927136638335,
+      "spearman_r": -0.5816051815959058
+    },
+    {
+      "feature": "const_season_pts_per_race",
+      "group": "B_form",
+      "univariate_auc": 0.8346088200773428,
+      "mutual_info_nats": 0.1990043731115716,
+      "spearman_r": 0.5797650824890522
+    },
+    {
+      "feature": "const_roll10_avg_pos",
+      "group": "B_form",
+      "univariate_auc": 0.8326328521616874,
+      "mutual_info_nats": 0.19161903028238725,
+      "spearman_r": -0.5748715526194689
+    },
+    {
+      "feature": "const_roll5_pts_per_car",
+      "group": "B_form",
+      "univariate_auc": 0.8325595931161436,
+      "mutual_info_nats": 0.18966252658356342,
+      "spearman_r": 0.5763909168469211
+    }
+  ],
+  "baseline_grid10_diagnostics_train_dev": {
+    "overall_acc": 0.7685641126649596,
+    "midfield_P8_P13_acc": 0.5959097320169252,
+    "midfield_P8_P13_share": 0.279298798503053,
+    "outside_midfield_acc": 0.8354741732713856
+  },
+  "figures": {
+    "fig01": "C:\\Users\\david\\OneDrive\\AI UAB\\MACHINE LEARNING\\project\\reports\\figures\\followup1\\fig01_scoring_eras_and_temporal_split.png",
+    "fig02": "C:\\Users\\david\\OneDrive\\AI UAB\\MACHINE LEARNING\\project\\reports\\figures\\followup1\\fig02_grid_vs_top10_and_pitlane_scrub.png",
+    "fig03": "C:\\Users\\david\\OneDrive\\AI UAB\\MACHINE LEARNING\\project\\reports\\figures\\followup1\\fig03_factor_group_signal_strength.png",
+    "fig04": "C:\\Users\\david\\OneDrive\\AI UAB\\MACHINE LEARNING\\project\\reports\\figures\\followup1\\fig04_constructor_momentum_and_lineage.png",
+    "fig05": "C:\\Users\\david\\OneDrive\\AI UAB\\MACHINE LEARNING\\project\\reports\\figures\\followup1\\fig05_circuit_overtaking_vs_attrition.png",
+    "fig06": "C:\\Users\\david\\OneDrive\\AI UAB\\MACHINE LEARNING\\project\\reports\\figures\\followup1\\fig06_correlation_matrix_and_multicollinearity.png"
+  }
+}
